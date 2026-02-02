@@ -6,7 +6,7 @@ A Next.js frontend for the DynamicForms application - a TypeForm-like system for
 
 - **Framework:** Next.js 14 (App Router)
 - **Language:** TypeScript
-- **Styling:** Tailwind CSS
+- **Styling:** Tailwind CSS v3
 - **HTTP Client:** Axios
 - **State Management:** React Context
 - **Form Handling:** react-hook-form
@@ -39,30 +39,36 @@ NEXT_PUBLIC_API_URL=http://localhost:5000/api/v1
 ## Project Structure
 ```
 src/
-├── app/                    # Next.js App Router (pages)
+├── app/                       # Next.js App Router (pages)
 │   ├── login/
-│   │   └── page.tsx        # Login page
-│   ├── layout.tsx          # Root layout
-│   ├── page.tsx            # Home page
-│   └── globals.css         # Global styles
-├── components/             # Reusable components
-│   ├── ui/                 # Basic UI components
-│   └── layout/             # Layout components
-├── lib/                    # Utilities
-│   ├── api.ts              # Axios client
-│   └── auth-service.ts     # Auth API functions
-├── context/                # React Context
-│   └── auth-context.tsx    # Auth state management
-├── types/                  # TypeScript types
-│   └── index.ts            # All types
-└── hooks/                  # Custom hooks
-    └── use-auth.ts         # Auth hook
+│   │   └── page.tsx           # Login page
+│   ├── dashboard/
+│   │   ├── layout.tsx         # Dashboard layout (protected)
+│   │   └── page.tsx           # Dashboard home
+│   ├── layout.tsx             # Root layout
+│   ├── page.tsx               # Home page (redirects)
+│   └── globals.css            # Global styles
+├── components/                # Reusable components
+│   ├── ui/                    # Basic UI components
+│   └── layout/                # Layout components
+│       ├── header.tsx         # Dashboard header
+│       └── sidebar.tsx        # Dashboard sidebar
+├── lib/                       # Utilities
+│   ├── api.ts                 # Axios client
+│   └── auth-service.ts        # Auth API functions
+├── context/                   # React Context
+│   └── auth-context.tsx       # Auth state management
+├── types/                     # TypeScript types
+│   └── index.ts               # All types
+└── hooks/                     # Custom hooks
+    └── use-auth.ts            # Auth hook
 ```
 
 ## Pages
 
 | Page | URL | Description | Auth Required |
 |------|-----|-------------|---------------|
+| Home | / | Redirects to login or dashboard | No |
 | Login | /login | User login page | No |
 | Dashboard | /dashboard | Main dashboard | Yes |
 | Forms | /dashboard/forms | List all forms | Yes |
@@ -82,7 +88,13 @@ src/
   - [x] API integration
   - [x] Redirect if already logged in
   - [x] Error handling
-- [ ] Dashboard
+- [x] Dashboard
+  - [x] Protected route (redirects if not logged in)
+  - [x] Header with user info and logout
+  - [x] Sidebar navigation
+  - [x] Dashboard home page
+  - [x] Home page redirect
+- [ ] Forms list page
 - [ ] Form builder
 - [ ] Public form page
 - [ ] Submissions viewer
@@ -97,6 +109,16 @@ src/
 6. Frontend saves token & user to localStorage
 7. Frontend updates AuthContext
 8. User redirected to /dashboard
+```
+
+## Protected Routes
+
+Dashboard and its sub-pages are protected:
+```
+1. User visits /dashboard
+2. Dashboard layout checks if authenticated
+3. If not authenticated → Redirect to /login
+4. If authenticated → Show dashboard content
 ```
 
 ## API Integration
