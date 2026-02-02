@@ -1,0 +1,70 @@
+export interface User {
+  id: string;
+  email: string;
+  fullName: string | null;
+  role: 'admin' | 'employee';
+  companyId: string;
+}
+
+export interface Company {
+  id: string;
+  name: string;
+  domain: string;
+}
+
+export interface FormField {
+  id: string;
+  type: 'text' | 'email' | 'select' | 'textarea' | 'number' | 'date';
+  label: string;
+  required?: boolean;
+  options?: string[];
+  placeholder?: string;
+}
+
+export interface Form {
+  publicId: string;
+  title: string;
+  description: string | null;
+  structureSchema: FormField[];
+  version: string;
+  isCurrent: boolean;
+  isPublished: boolean;
+  createdAt: string;
+  company?: {
+    name: string;
+  };
+}
+
+export interface Submission {
+  submissionId: string;
+  responseData: Record<string, any>;
+  status: string;
+  submittedAt: string;
+  contact: {
+    email: string;
+    fullName: string | null;
+  };
+  form?: {
+    publicId: string;
+    title: string;
+    version: string;
+  };
+}
+
+export interface AuthState {
+  user: User | null;
+  token: string | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+}
+
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+export interface ApiResponse<T> {
+  success: boolean;
+  message?: string;
+  data?: T;
+}
