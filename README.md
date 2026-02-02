@@ -44,18 +44,22 @@ src/
 │   │   └── page.tsx           # Login page
 │   ├── dashboard/
 │   │   ├── layout.tsx         # Dashboard layout (protected)
-│   │   └── page.tsx           # Dashboard home
+│   │   ├── page.tsx           # Dashboard home
+│   │   └── forms/
+│   │       └── page.tsx       # Forms list page
 │   ├── layout.tsx             # Root layout
 │   ├── page.tsx               # Home page (redirects)
 │   └── globals.css            # Global styles
 ├── components/                # Reusable components
-│   ├── ui/                    # Basic UI components
-│   └── layout/                # Layout components
+│   ├── ui/
+│   │   └── skeleton.tsx       # Skeleton loading component
+│   └── layout/
 │       ├── header.tsx         # Dashboard header
 │       └── sidebar.tsx        # Dashboard sidebar
 ├── lib/                       # Utilities
 │   ├── api.ts                 # Axios client
-│   └── auth-service.ts        # Auth API functions
+│   ├── auth-service.ts        # Auth API functions
+│   └── form-service.ts        # Form API functions
 ├── context/                   # React Context
 │   └── auth-context.tsx       # Auth state management
 ├── types/                     # TypeScript types
@@ -72,7 +76,7 @@ src/
 | Login | /login | User login page | No |
 | Dashboard | /dashboard | Main dashboard | Yes |
 | Forms | /dashboard/forms | List all forms | Yes |
-| Create Form | /dashboard/forms/new | Create new form | Yes |
+| Create Form | /dashboard/forms/new | Create new form | Yes (Admin) |
 | Edit Form | /dashboard/forms/[id] | Edit form | Yes |
 | Public Form | /forms/[id] | Public form for submission | No |
 | Submission | /submissions/[id] | View submission | No |
@@ -94,10 +98,28 @@ src/
   - [x] Sidebar navigation
   - [x] Dashboard home page
   - [x] Home page redirect
-- [ ] Forms list page
+- [x] Forms list page
+  - [x] Fetch and display forms
+  - [x] Skeleton loading
+  - [x] Empty state
+  - [x] Error state with retry
+  - [x] Role-based actions (admin vs employee)
+  - [x] Delete form (admin only)
 - [ ] Form builder
 - [ ] Public form page
 - [ ] Submissions viewer
+
+## Role-Based Access
+
+| Feature | Admin | Employee |
+|---------|-------|----------|
+| View forms list | ✅ | ✅ |
+| View form details | ✅ | ✅ |
+| Create form | ✅ | ❌ |
+| Edit form | ✅ | ❌ |
+| Delete form | ✅ | ❌ |
+| View submissions | ✅ | ✅ |
+| Delete submissions | ✅ | ❌ |
 
 ## Authentication Flow
 ```
