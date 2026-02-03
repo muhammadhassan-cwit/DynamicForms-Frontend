@@ -11,6 +11,16 @@ export const getForms = async (): Promise<Form[]> => {
   return response.data.data;
 };
 
+export const getForm = async (formId: string): Promise<Form> => {
+  const response = await api.get<ApiResponse<Form>>(`/forms/${formId}`);
+
+  if (!response.data.success || !response.data.data) {
+    throw new Error(response.data.message || 'Failed to fetch form');
+  }
+
+  return response.data.data;
+};
+
 export const deleteForm = async (formId: string): Promise<void> => {
   const response = await api.delete<ApiResponse<null>>(`/forms/${formId}`);
 
