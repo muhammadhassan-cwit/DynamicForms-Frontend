@@ -33,16 +33,33 @@ export const getPublicForm = async (formId: string): Promise<Form> => {
 
 export const submitForm = async (
   formId: string,
-  body: { email: string, fullName?: string; responseData: Record<string, any>}
-): Promise<void> => {
-  const response = await api.post<ApiResponse<null>>(
+  body: { email: string; fullName?: string; responseData: Record<string, any> }
+): Promise<string> => {
+  const response = await api.post<ApiResponse<{ submissionId: string }>>(
     `/public/forms/${formId}/submit`,
     body
   );
 
-  if (!response.data.success) {
+  if (!response.data.success || !response.data.data) {
     throw new Error(response.data.message || 'Failed to submit form');
   }
+
+  return response.data.data.submissionId;
+};
+
+export const getPublicSubmission = async (
+  submissionId: string,
+  email: string
+): Promise<any> => {
+  const response = await api.get<ApiResponse<any>>(
+    `/public/submissions/${submissionId}?email=${encodeURIComponent(email)}`
+  );
+
+  if (!response.data.success || !response.data.data) {
+    throw new Error(response.data.message || 'Failed to fetch submission');
+  }
+
+  return response.data.data;
 };
 
 export const deleteForm = async (formId: string): Promise<void> => {
