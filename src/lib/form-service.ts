@@ -21,6 +21,30 @@ export const getForm = async (formId: string): Promise<Form> => {
   return response.data.data;
 };
 
+export const getPublicForm = async (formId: string): Promise<Form> => {
+  const response = await api.get<ApiResponse<Form>>(`/public/forms/${formId}`);
+
+  if (!response.data.success || !response.data.data) {
+    throw new Error(response.data.message || 'Failed to fetch form');
+  }
+
+  return response.data.data;
+};
+
+export const submitForm = async (
+  formId: string,
+  body: { email: string, fullName?: string; responseData: Record<string, any>}
+): Promise<void> => {
+  const response = await api.post<ApiResponse<null>>(
+    `/public/forms/${formId}/submit`,
+    body
+  );
+
+  if (!response.data.success) {
+    throw new Error(response.data.message || 'Failed to submit form');
+  }
+};
+
 export const deleteForm = async (formId: string): Promise<void> => {
   const response = await api.delete<ApiResponse<null>>(`/forms/${formId}`);
 

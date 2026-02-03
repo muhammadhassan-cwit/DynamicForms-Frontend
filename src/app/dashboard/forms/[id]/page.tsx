@@ -124,7 +124,7 @@ export default function ViewFormPage() {
             <div>
               <p className="text-sm text-gray-500">Public URL</p>
               <p className="text-blue-500">
-                {typeof window !== 'undefined' && `${window.location.origin}/forms/${form.publicId}`}
+                {typeof window !== 'undefined' && `${window.location.origin}/submit/${form.publicId}`}
               </p>
             </div>
           )}
