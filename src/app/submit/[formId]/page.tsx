@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import { getPublicForm, submitForm } from '@/lib/form-service';
 import { Form } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -17,6 +18,8 @@ export default function PublicFormPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [submissionId, setSubmissionId] = useState<string | null>(null);
+  const [submittedEmail, setSubmittedEmail] = useState<string>('');
 
   useEffect(() => {
     const fetchForm = async () => {
@@ -72,26 +75,27 @@ export default function PublicFormPage() {
     setIsSubmitting(true);
 
     try {
-
       const emailField = form.structureSchema.find((f) => f.type === 'email');
       const email = emailField ? formData[emailField.id] : '';
-      
+
       const nameField = form.structureSchema.find(
-        (f)=> f.type === 'text' && f.label.toLowerCase().includes('name')
+        (f) => f.type === 'text' && f.label.toLowerCase().includes('name')
       );
       const fullName = nameField ? formData[nameField.id] : '';
 
       const responseData: Record<string, any> = {};
-      form.structureSchema.forEach((field)=> {
+      form.structureSchema.forEach((field) => {
         responseData[field.label] = formData[field.id] || '';
       });
 
-      await submitForm(formId, {
+      const id = await submitForm(formId, {
         email,
         fullName,
         responseData,
       });
-      
+
+      setSubmissionId(id);
+      setSubmittedEmail(email);
       setIsSubmitted(true);
     } catch (err: any) {
       setError(err.message || 'Failed to submit form');
@@ -134,7 +138,15 @@ export default function PublicFormPage() {
         <div className="bg-white p-8 rounded-lg shadow-md text-center max-w-md">
           <div className="text-green-500 text-5xl mb-4">✓</div>
           <h2 className="text-2xl font-bold text-gray-800 mb-2">Thank You!</h2>
-          <p className="text-gray-500">Your response has been submitted successfully.</p>
+          <p className="text-gray-500 mb-6">Your response has been submitted successfully.</p>
+          {submissionId && (
+            <Link
+              href={`/submit/result/${submissionId}?email=${encodeURIComponent(submittedEmail)}`}
+              className="inline-block bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
+            >
+              View Your Submission
+            </Link>
+          )}
         </div>
       </div>
     );
