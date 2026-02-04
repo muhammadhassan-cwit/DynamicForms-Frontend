@@ -85,4 +85,22 @@ export const createForm = async (data: CreateFormData): Promise<Form> => {
   }
 
   return response.data.data;
+}
+
+interface UpdateFormData {
+  title?: string;
+  description?: string;
+  structureSchema?: FormField[];
+  isPublished?: boolean;
+  isMajorChange?: boolean;
+}
+
+export const updateForm = async (formId: string, data: UpdateFormData): Promise<Form> => {
+  const response = await api.patch<ApiResponse<Form>>(`/forms/${formId}`, data);
+
+  if (!response.data.success || !response.data.data) {
+    throw new Error(response.data.message || 'Failed to update form');
+  }
+
+  return response.data.data;
 };
