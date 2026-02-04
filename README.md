@@ -1,6 +1,6 @@
 # DynamicForms Frontend
 
-A Next.js frontend for the DynamicForms application - a TypeForm-like system for creating and managing dynamic forms.
+A modern, responsive frontend for the DynamicForms platform — a TypeForm-like multi-tenant system where companies can create dynamic forms and collect submissions.
 
 ## Tech Stack
 
@@ -8,158 +8,180 @@ A Next.js frontend for the DynamicForms application - a TypeForm-like system for
 - **Language:** TypeScript
 - **Styling:** Tailwind CSS v3
 - **HTTP Client:** Axios
-- **State Management:** React Context
-- **Form Handling:** react-hook-form
+- **State Management:** React Context API
+- **Form Validation:** React Hook Form
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js (v18+)
-- Backend server running on http://localhost:5000
+- Node.js (v18 or higher)
+- npm
+- Backend running at `http://localhost:5000`
 
 ### Installation
 ```bash
-# Install dependencies
+git clone https://github.com/muhammadhassan-cwit/DynamicForms-Frontend.git
+cd DynamicForms-Frontend
 npm install
-
-# Start development server
-npm run dev
 ```
 
-Visit `http://localhost:3000`
-
-### Environment Variables
+### Environment Setup
 
 Create a `.env.local` file:
 ```
 NEXT_PUBLIC_API_URL=http://localhost:5000/api/v1
 ```
 
-## Project Structure
-```
-src/
-├── app/                       # Next.js App Router (pages)
-│   ├── login/
-│   │   └── page.tsx           # Login page
-│   ├── dashboard/
-│   │   ├── layout.tsx         # Dashboard layout (protected)
-│   │   ├── page.tsx           # Dashboard home
-│   │   └── forms/
-│   │       └── page.tsx       # Forms list page
-│   ├── layout.tsx             # Root layout
-│   ├── page.tsx               # Home page (redirects)
-│   └── globals.css            # Global styles
-├── components/                # Reusable components
-│   ├── ui/
-│   │   └── skeleton.tsx       # Skeleton loading component
-│   └── layout/
-│       ├── header.tsx         # Dashboard header
-│       └── sidebar.tsx        # Dashboard sidebar
-├── lib/                       # Utilities
-│   ├── api.ts                 # Axios client
-│   ├── auth-service.ts        # Auth API functions
-│   └── form-service.ts        # Form API functions
-├── context/                   # React Context
-│   └── auth-context.tsx       # Auth state management
-├── types/                     # TypeScript types
-│   └── index.ts               # All types
-└── hooks/                     # Custom hooks
-    └── use-auth.ts            # Auth hook
+### Run Development Server
+```bash
+npm run dev
 ```
 
-## Pages
-
-| Page | URL | Description | Auth Required |
-|------|-----|-------------|---------------|
-| Home | / | Redirects to login or dashboard | No |
-| Login | /login | User login page | No |
-| Dashboard | /dashboard | Main dashboard | Yes |
-| Forms | /dashboard/forms | List all forms | Yes |
-| Create Form | /dashboard/forms/new | Create new form | Yes (Admin) |
-| Edit Form | /dashboard/forms/[id] | Edit form | Yes |
-| Public Form | /forms/[id] | Public form for submission | No |
-| Submission | /submissions/[id] | View submission | No |
+Visit `http://localhost:3000`
 
 ## Features
 
-- [x] Project setup
-- [x] Axios client with interceptors
-- [x] Auth context (login state management)
-- [x] TypeScript types
-- [x] Login page
-  - [x] Form validation with react-hook-form
-  - [x] API integration
-  - [x] Redirect if already logged in
-  - [x] Error handling
-- [x] Dashboard
-  - [x] Protected route (redirects if not logged in)
-  - [x] Header with user info and logout
-  - [x] Sidebar navigation
-  - [x] Dashboard home page
-  - [x] Home page redirect
-- [x] Forms list page
-  - [x] Fetch and display forms
-  - [x] Skeleton loading
-  - [x] Empty state
-  - [x] Error state with retry
-  - [x] Role-based actions (admin vs employee)
-  - [x] Delete form (admin only)
-- [ ] Form builder
-- [ ] Public form page
-- [ ] Submissions viewer
+### Authentication
 
-## Role-Based Access
+- Login with email and password
+- JWT token-based authentication
+- Auth state persistence with localStorage
+- Protected dashboard routes
 
-| Feature | Admin | Employee |
-|---------|-------|----------|
-| View forms list | ✅ | ✅ |
-| View form details | ✅ | ✅ |
-| Create form | ✅ | ❌ |
-| Edit form | ✅ | ❌ |
-| Delete form | ✅ | ❌ |
-| View submissions | ✅ | ✅ |
-| Delete submissions | ✅ | ❌ |
+### Dashboard
 
-## Authentication Flow
+- Header with user info and logout
+- Sidebar navigation
+- Role-based UI (admin vs employee)
+
+### Forms Management
+
+- View all forms (cards with skeleton loading)
+- Create new forms with dynamic field builder
+- View form details with public URL
+- Delete forms (admin only)
+- Supported field types: text, email, number, date, textarea, select
+
+### Public Form Submission
+
+- Public form page (no login required)
+- Dynamic field rendering from database schema
+- Client-side validation (required fields, email format)
+- Success page with link to view submission
+- "Powered by DynamicForms" footer
+
+### Submissions
+
+- View submission result (public, secured with submissionId + email)
+- Admin submissions list per form
+- Admin submission detail view
+- Delete submissions with optimistic updates (admin only)
+- Employee can view but not delete
+
+## Project Structure
 ```
-1. User visits /login
-2. User enters email & password
-3. Frontend validates input
-4. Frontend sends POST /auth/login to backend
-5. Backend returns { token, user }
-6. Frontend saves token & user to localStorage
-7. Frontend updates AuthContext
-8. User redirected to /dashboard
+src/
+├── app/
+│   ├── layout.tsx                              # Root layout (AuthProvider)
+│   ├── page.tsx                                # Home (redirect logic)
+│   ├── login/page.tsx                          # Login page
+│   ├── dashboard/
+│   │   ├── layout.tsx                          # Dashboard layout (header + sidebar)
+│   │   ├── page.tsx                            # Dashboard home
+│   │   └── forms/
+│   │       ├── page.tsx                        # Forms list
+│   │       ├── new/page.tsx                    # Create form
+│   │       └── [id]/
+│   │           ├── page.tsx                    # View form details
+│   │           └── submissions/page.tsx        # Submissions list
+│   │   └── submission-detail/
+│   │       └── [submissionId]/page.tsx         # Submission detail
+│   └── submit/
+│       ├── [formId]/page.tsx                   # Public form page
+│       └── result/[submissionId]/page.tsx      # Public submission result
+├── components/
+│   ├── form-builder/
+│   │   └── field-editor.tsx                    # Field configuration component
+│   ├── layout/
+│   │   ├── header.tsx                          # Dashboard header
+│   │   └── sidebar.tsx                         # Dashboard sidebar
+│   └── ui/
+│       └── skeleton.tsx                        # Skeleton loading component
+├── context/
+│   └── auth-context.tsx                        # Authentication context
+├── hooks/
+│   └── use-auth.ts                             # Auth hook
+├── lib/
+│   ├── api.ts                                  # Axios instance with interceptors
+│   ├── auth-service.ts                         # Auth API functions
+│   ├── form-service.ts                         # Form API functions
+│   └── submission-service.ts                   # Submission API functions
+└── types/
+    └── index.ts                                # TypeScript interfaces
 ```
 
-## Protected Routes
+## API Endpoints Used
 
-Dashboard and its sub-pages are protected:
-```
-1. User visits /dashboard
-2. Dashboard layout checks if authenticated
-3. If not authenticated → Redirect to /login
-4. If authenticated → Show dashboard content
-```
+### Auth (Protected)
 
-## API Integration
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | /auth/login | User login |
+| POST | /auth/logout | User logout |
 
-All API calls go through `src/lib/api.ts` which:
-- Automatically attaches JWT token to requests
-- Handles 401 errors (redirects to login)
-- Uses base URL from environment variables
+### Forms (Protected)
 
-## Scripts
-```bash
-npm run dev      # Start development server
-npm run build    # Build for production
-npm start        # Start production server
-npm run lint     # Run ESLint
-```
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | /forms | List all forms |
+| GET | /forms/:id | Get form details |
+| POST | /forms | Create new form |
+| DELETE | /forms/:id | Delete form (admin) |
+
+### Submissions (Protected)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | /forms/:formId/submissions | List submissions for a form |
+| GET | /submissions/:submissionId | Get submission details |
+| DELETE | /submissions/:submissionId | Delete submission (admin) |
+
+### Public (No Auth)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | /public/forms/:formId | Get public form |
+| POST | /public/forms/:formId/submit | Submit form response |
+| GET | /public/submissions/:id?email=x | View submission result |
+
+## Git Workflow
+
+- `main` — production
+- `dev` — development
+- `feat/feature-name` — new features
+- `fix/bug-name` — bug fixes
+
+### Commit Prefixes
+
+- `feat:` — new feature
+- `fix:` — bug fix
+- `chore:` — maintenance
+- `docs:` — documentation
+
+## Completed Branches
+
+- feat/project-setup
+- feat/login-page
+- feat/dashboard
+- feat/forms-list
+- feat/form-builder
+- feat/view-form
+- feat/public-form
+- fix/error-messages
+- feat/submission-viewer
+- feat/admin-submissions
 
 ## Backend Repository
 
-This frontend connects to the DynamicForms Backend:
-- Repository: [DynamicForms-Backend](https://github.com/muhammadhassan-cwit/DynamicForms-Backend)
-- API Base URL: http://localhost:5000/api/v1
+[DynamicForms Backend](https://github.com/muhammadhassan-cwit/DynamicForms-Backend)
