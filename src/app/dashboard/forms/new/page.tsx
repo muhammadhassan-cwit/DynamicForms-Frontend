@@ -139,17 +139,6 @@ export default function CreateFormPage() {
 
         {/* Form Fields */}
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-800">Form Fields</h2>
-            <button
-              type="button"
-              onClick={addField}
-              className="bg-blue-500 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-600"
-            >
-              + Add Field
-            </button>
-          </div>
-
           {fields.length === 0 ? (
             <p className="text-gray-500 text-center py-8">
               No fields added yet. Click "Add Field" to start building your form.
@@ -167,6 +156,15 @@ export default function CreateFormPage() {
               ))}
             </div>
           )}
+
+          {/* Add Field Button - At Bottom */}
+          <button
+            type="button"
+            onClick={addField}
+            className="mt-4 bg-blue-50 text-blue-600 px-4 py-3 rounded-md text-sm hover:bg-blue-100 border border-blue-200 border-dashed"
+          >
+            + Add Field
+          </button>
         </div>
 
         {/* Error Message */}
