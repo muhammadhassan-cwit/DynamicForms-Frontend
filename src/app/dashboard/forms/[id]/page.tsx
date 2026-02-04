@@ -165,16 +165,22 @@ export default function ViewFormPage() {
       </div>
 
       {/* Actions */}
-      {isAdmin && (
-        <div className="flex gap-4">
+       <div className="flex gap-4">
+        <Link
+          href={`/dashboard/forms/${formId}/submissions`}
+          className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+        >
+          View Submissions
+        </Link>
+        {isAdmin && (
           <button
             onClick={handleDelete}
             className="bg-red-100 text-red-700 px-4 py-2 rounded-md hover:bg-red-200"
           >
             Delete Form
           </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
