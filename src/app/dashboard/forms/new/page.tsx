@@ -7,6 +7,7 @@ import { useForm } from 'react-hook-form';
 import { FormField } from '@/types';
 import { createForm } from '@/lib/form-service';
 import FieldEditor from '@/components/form-builder/field-editor';
+import { toast } from 'sonner';
 
 interface FormData {
   title: string;
@@ -82,9 +83,10 @@ export default function CreateFormPage() {
         isPublished,
       });
 
+      toast.success(isPublished ? 'Form published successfully' : 'Form saved as draft');
       router.push('/dashboard/forms');
     } catch (err: any) {
-      setError(err.message || 'Failed to create form');
+      toast.error(err.message || 'Failed to create form');
     } finally {
       setIsSubmitting(false);
     }

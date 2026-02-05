@@ -7,6 +7,8 @@ import { useAuth } from '@/hooks/use-auth';
 import { getForm, deleteForm } from '@/lib/form-service';
 import { Form } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
+import ConfirmModal from '@/components/ui/confirm-modal';
 
 export default function ViewFormPage() {
   const params = useParams();
@@ -17,6 +19,7 @@ export default function ViewFormPage() {
   const [form, setForm] = useState<Form | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const isAdmin = user?.role === 'admin';
 
@@ -37,15 +40,14 @@ export default function ViewFormPage() {
   }, [formId]);
 
   const handleDelete = async () => {
-    if (!confirm(`Are you sure you want to delete "${form?.title}"?`)) {
-      return;
-    }
+    setShowDeleteModal(false);
 
     try {
       await deleteForm(formId);
+      toast.success('Form deleted successfully');
       router.push('/dashboard/forms');
     } catch (err: any) {
-      alert(err.message || 'Failed to delete form');
+      toast.error(err.message || 'Failed to delete form');
     }
   };
 
@@ -96,11 +98,10 @@ export default function ViewFormPage() {
         </div>
         <div className="flex gap-2">
           <span
-            className={`px-3 py-1 text-sm rounded-full ${
-              form.isPublished
+            className={`px-3 py-1 text-sm rounded-full ${form.isPublished
                 ? 'bg-green-100 text-green-700'
                 : 'bg-yellow-100 text-yellow-700'
-            }`}
+              }`}
           >
             {form.isPublished ? 'Published' : 'Draft'}
           </span>
@@ -165,7 +166,7 @@ export default function ViewFormPage() {
       </div>
 
       {/* Actions */}
-       <div className="flex gap-4">
+      <div className="flex gap-4">
         <Link
           href={`/dashboard/forms/${formId}/submissions`}
           className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
@@ -174,12 +175,20 @@ export default function ViewFormPage() {
         </Link>
         {isAdmin && (
           <button
-            onClick={handleDelete}
+            onClick={() => setShowDeleteModal(true)}
             className="bg-red-100 text-red-700 px-4 py-2 rounded-md hover:bg-red-200"
           >
             Delete Form
           </button>
         )}
+        {/* Confirm Modal */}
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        title="Delete Form?"
+        message={`Are you sure you want to delete "${form?.title}"? This cannot be undone.`}
+        onConfirm={handleDelete}
+        onCancel={() => setShowDeleteModal(false)}
+      />
       </div>
     </div>
   );
