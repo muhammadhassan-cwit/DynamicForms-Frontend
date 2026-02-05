@@ -8,6 +8,7 @@ import { FormField } from '@/types';
 import { getForm, updateForm } from '@/lib/form-service';
 import FieldEditor from '@/components/form-builder/field-editor';
 import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
 
 interface FormData {
   title: string;
@@ -116,10 +117,10 @@ export default function EditFormPage() {
         isMajorChange,
       });
 
-      // Redirect to new form's detail page (backend creates new form with new ID)
+      toast.success('Form updated successfully');
       router.push(`/dashboard/forms/${updatedForm.publicId}`);
     } catch (err: any) {
-      setError(err.message || 'Failed to update form');
+      toast.error(err.message || 'Failed to update form');
     } finally {
       setIsSubmitting(false);
     }

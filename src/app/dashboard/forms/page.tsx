@@ -6,12 +6,15 @@ import { useAuth } from '@/hooks/use-auth';
 import { getForms, deleteForm } from '@/lib/form-service';
 import { Form } from '@/types';
 import { FormCardSkeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
+import ConfirmModal from '@/components/ui/confirm-modal';
 
 export default function FormsPage() {
   const { user } = useAuth();
   const [forms, setForms] = useState<Form[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
 
   const isAdmin = user?.role === 'admin';
 
@@ -32,16 +35,19 @@ export default function FormsPage() {
     fetchForms();
   }, []);
 
-  const handleDelete = async (formId: string, formTitle: string) => {
-    if (!confirm(`Are you sure you want to delete "${formTitle}"?`)) {
-      return;
-    }
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+
+    const previousForms = [...forms];
+    setForms(forms.filter((form) => form.publicId !== deleteTarget.id));
+    setDeleteTarget(null);
 
     try {
-      await deleteForm(formId);
-      setForms(forms.filter((form) => form.publicId !== formId));
+      await deleteForm(deleteTarget.id);
+      toast.success('Form Deleted Successfully');
     } catch (err: any) {
-      alert(err.message || 'Failed to delete form');
+      setForms(previousForms);
+      toast.error(err.message || 'Failed to Delete Form');
     }
   };
 
@@ -118,11 +124,10 @@ export default function FormsPage() {
               {/* Status and Version */}
               <div className="flex gap-2 mb-4">
                 <span
-                  className={`px-2 py-1 text-xs rounded-full ${
-                    form.isPublished
+                  className={`px-2 py-1 text-xs rounded-full ${form.isPublished
                       ? 'bg-green-100 text-green-700'
                       : 'bg-yellow-100 text-yellow-700'
-                  }`}
+                    }`}
                 >
                   {form.isPublished ? 'Published' : 'Draft'}
                 </span>
@@ -148,7 +153,7 @@ export default function FormsPage() {
                       Edit
                     </Link>
                     <button
-                      onClick={() => handleDelete(form.publicId, form.title)}
+                      onClick={() => setDeleteTarget({ id: form.publicId, title: form.title })}
                       className="bg-red-100 text-red-700 px-3 py-2 rounded-md text-sm hover:bg-red-200"
                     >
                       Delete
@@ -160,6 +165,14 @@ export default function FormsPage() {
           ))}
         </div>
       )}
+      {/* Confirm Modal */}
+      <ConfirmModal
+        isOpen={!!deleteTarget}
+        title="Delete Form?"
+        message={`Are you sure you want to delete "${deleteTarget?.title}"? This cannot be undone.`}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteTarget(null)}
+        />
     </div>
   );
 }

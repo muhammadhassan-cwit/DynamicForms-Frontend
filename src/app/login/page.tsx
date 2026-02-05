@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '@/hooks/use-auth';
 import { loginUser } from '@/lib/auth-service';
+import { toast } from 'sonner';
 
 interface LoginFormData {
   email: string;
@@ -14,7 +15,6 @@ interface LoginFormData {
 export default function LoginPage() {
   const router = useRouter();
   const { isAuthenticated, isLoading: authLoading, login } = useAuth();
-  const [error, setError] = useState<string | null>(null);
 
   const {
     register,
@@ -29,15 +29,17 @@ export default function LoginPage() {
   }, [isAuthenticated, authLoading, router]);
 
   const onSubmit = async (data: LoginFormData) => {
-    try {
-      setError(null);
-      const response = await loginUser(data.email, data.password);
-      login(response.token, response.user);
-      router.push('/dashboard');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Invalid email or password');
-    }
-  };
+  try {
+    const response = await loginUser(data.email, data.password);
+    login(response.token, response.user);
+
+    toast.success('Welcome back');
+    router.push('/dashboard');
+  } catch (err: any) {
+    toast.error(err.response?.data?.message || 'Invalid email or password');
+  }
+};
+
 
   if (authLoading) {
     return (
@@ -101,13 +103,6 @@ export default function LoginPage() {
               <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
             )}
           </div>
-
-          {error && (
-            <div className="bg-red-50 text-red-500 p-3 rounded-md text-sm">
-              {error}
-            </div>
-          )}
-
           <button
             type="submit"
             disabled={isSubmitting}
