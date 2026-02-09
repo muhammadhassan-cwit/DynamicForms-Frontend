@@ -1,0 +1,228 @@
+'use client';
+
+import { FormField } from '@/types';
+
+interface FieldEditorProps {
+  field: FormField;
+  index: number;
+  onUpdate: (index: number, field: FormField) => void;
+  onRemove: (index: number) => void;
+}
+
+const fieldTypes = [
+  { value: 'text', label: 'Text' },
+  { value: 'email', label: 'Email' },
+  { value: 'textarea', label: 'Text Area' },
+  { value: 'number', label: 'Number' },
+  { value: 'date', label: 'Date' },
+  { value: 'select', label: 'Dropdown' },
+  { value: 'checkbox', label: 'Checkbox' },
+  { value: 'radio', label: 'Radio Buttons' },
+  { value: 'file', label: 'File Upload' },
+  { value: 'image', label: 'Image Upload' },
+  { value: 'phone', label: 'Phone Number' },
+  { value: 'url', label: 'URL' },
+  { value: 'rating', label: 'Rating' },
+];
+
+const fileSizeOptions = [
+  { value: 1048576, label: '1 MB' },
+  { value: 2097152, label: '2 MB' },
+  { value: 5242880, label: '5 MB' },
+  { value: 10485760, label: '10 MB' },
+];
+
+const imageTypeOptions = [
+  { value: 'image/jpeg', label: 'JPG/JPEG' },
+  { value: 'image/png', label: 'PNG' },
+  { value: 'image/gif', label: 'GIF' },
+  { value: 'image/webp', label: 'WEBP' },
+];
+
+const fileTypeOptions = [
+  { value: 'application/pdf', label: 'PDF' },
+  { value: 'application/msword', label: 'DOC' },
+  { value: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', label: 'DOCX' },
+  { value: 'application/vnd.ms-excel', label: 'XLS' },
+  { value: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', label: 'XLSX' },
+  { value: 'text/csv', label: 'CSV' },
+  { value: 'text/plain', label: 'TXT' },
+];
+
+const typesWithPlaceholder = ['text', 'email', 'textarea', 'number', 'phone', 'url'];
+const typesWithOptions = ['select', 'checkbox', 'radio'];
+const typesWithFileConfig = ['file', 'image'];
+
+export default function FieldEditor({ field, index, onUpdate, onRemove }: FieldEditorProps) {
+  const handleChange = (key: keyof FormField, value: any) => {
+    onUpdate(index, { ...field, [key]: value });
+  };
+
+  const handleOptionsChange = (value: string) => {
+    const options = value.split(',').map((opt) => opt.trim()).filter(Boolean);
+    onUpdate(index, { ...field, options });
+  };
+
+  const handleAllowedTypeToggle = (mimeType: string) => {
+    const currentTypes = field.allowedTypes || [];
+    let newTypes: string[];
+
+    if (currentTypes.includes(mimeType)) {
+      newTypes = currentTypes.filter((t) => t !== mimeType);
+    } else {
+      newTypes = [...currentTypes, mimeType];
+    }
+
+    onUpdate(index, { ...field, allowedTypes: newTypes });
+  };
+
+  const getAvailableFileTypes = () => {
+    if (field.type === 'image') return imageTypeOptions;
+    if (field.type === 'file') return fileTypeOptions;
+    return [];
+  };
+
+  const getDefaultMaxSize = () => {
+    if (field.type === 'image') return 5242880;
+    return 10485760;
+  };
+
+  return (
+    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+      <div className="flex items-center justify-between mb-4">
+        <span className="text-sm font-medium text-gray-500">Field {index + 1}</span>
+        <button
+          type="button"
+          onClick={() => onRemove(index)}
+          className="text-red-500 hover:text-red-700 text-sm"
+        >
+          Remove
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Field Type
+          </label>
+          <select
+            value={field.type}
+            onChange={(e) => handleChange('type', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            {fieldTypes.map((type) => (
+              <option key={type.value} value={type.value}>
+                {type.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Label *
+          </label>
+          <input
+            type="text"
+            value={field.label}
+            onChange={(e) => handleChange('label', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Enter field label"
+          />
+        </div>
+
+        {typesWithPlaceholder.includes(field.type) && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Placeholder
+            </label>
+            <input
+              type="text"
+              value={field.placeholder || ''}
+              onChange={(e) => handleChange('placeholder', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter placeholder text"
+            />
+          </div>
+        )}
+
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            id={`required-${index}`}
+            checked={field.required || false}
+            onChange={(e) => handleChange('required', e.target.checked)}
+            className="h-4 w-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+          />
+          <label htmlFor={`required-${index}`} className="ml-2 text-sm text-gray-700">
+            Required field
+          </label>
+        </div>
+      </div>
+
+      {typesWithOptions.includes(field.type) && (
+        <div className="mt-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Options (comma-separated) *
+          </label>
+          <input
+            type="text"
+            value={field.options?.join(', ') || ''}
+            onChange={(e) => handleOptionsChange(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Option 1, Option 2, Option 3"
+          />
+        </div>
+      )}
+
+      {typesWithFileConfig.includes(field.type) && (
+        <div className="mt-4 p-4 bg-white rounded-md border border-gray-200">
+          <h4 className="text-sm font-medium text-gray-700 mb-3">
+            {field.type === 'image' ? 'Image' : 'File'} Upload Settings
+          </h4>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">
+                Max File Size
+              </label>
+              <select
+                value={field.maxSize || getDefaultMaxSize()}
+                onChange={(e) => handleChange('maxSize', Number(e.target.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {fileSizeOptions.map((size) => (
+                  <option key={size.value} value={size.value}>
+                    {size.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-2">
+                Allowed Types
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {getAvailableFileTypes().map((type) => (
+                  <label
+                    key={type.value}
+                    className="inline-flex items-center cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={field.allowedTypes?.includes(type.value) || false}
+                      onChange={() => handleAllowedTypeToggle(type.value)}
+                      className="h-4 w-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <span className="ml-1 text-sm text-gray-600">{type.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
