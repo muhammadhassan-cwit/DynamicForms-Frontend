@@ -15,13 +15,13 @@ export default function RatingField({ field, value, onChange, error }: RatingFie
 
   return (
     <FieldWrapper field={field} error={error}>
-      <div className="flex gap-1 mt-1">
+      <div className="flex gap-1.5 mt-1">
         {[1, 2, 3, 4, 5].map((star) => (
           <button
             key={star}
             type="button"
             onClick={() => onChange(star)}
-            className="text-3xl focus:outline-none transition-colors"
+            className="text-3xl focus:outline-none transition-all duration-150 hover:scale-110"
           >
             <span className={star <= rating ? 'text-yellow-400' : 'text-gray-300'}>
               ★
@@ -30,7 +30,7 @@ export default function RatingField({ field, value, onChange, error }: RatingFie
         ))}
       </div>
       {rating > 0 && (
-        <p className="text-sm text-gray-500 mt-1">{rating} out of 5</p>
+        <p className="text-sm text-gray-500 mt-1.5">{rating} out of 5</p>
       )}
     </FieldWrapper>
   );

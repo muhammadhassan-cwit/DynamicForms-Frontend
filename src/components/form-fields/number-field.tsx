@@ -18,7 +18,7 @@ export default function NumberField({ field, value, onChange, error }: NumberFie
         value={value || ''}
         onChange={(e) => onChange(e.target.value)}
         placeholder={field.placeholder || ''}
-        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full px-4 py-2.5 border border-gray-200 rounded-lg bg-gray-50 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 focus:bg-white transition-all duration-200"
       />
     </FieldWrapper>
   );

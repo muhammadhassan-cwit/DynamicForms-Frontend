@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import ConfirmModal from '@/components/ui/confirm-modal';
 import { FormField } from '@/types';
+import { ChevronLeftIcon, TrashIcon, DownloadIcon } from '@/components/icons';
 
 interface SubmissionDetail {
     submissionId: string;
@@ -92,7 +93,7 @@ export default function SubmissionDetailPage() {
         const fieldType = getFieldType(label);
 
         if (!value || value === '') {
-            return <p className="text-gray-400 italic">No response</p>;
+            return <p className="text-gray-400 italic text-sm">No response</p>;
         }
 
         if (fieldType === 'file') {
@@ -101,10 +102,10 @@ export default function SubmissionDetailPage() {
                     href={`${getBackendUrl()}${value}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-blue-500 hover:text-blue-600"
+                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors"
                 >
-                    <span>📄</span>
-                    <span className="underline">Download File</span>
+                    <DownloadIcon className="w-4 h-4" />
+                    Download File
                 </a>
             );
         }
@@ -115,13 +116,13 @@ export default function SubmissionDetailPage() {
                     <img
                         src={`${getBackendUrl()}${value}`}
                         alt={label}
-                        className="max-h-48 rounded-md border border-gray-200"
+                        className="max-h-48 rounded-lg border border-gray-200 shadow-sm"
                     />
                     <a
                         href={`${getBackendUrl()}${value}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-500 hover:text-blue-600 text-sm mt-2 inline-block"
+                        className="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-700 text-sm mt-2"
                     >
                         View Full Size
                     </a>
@@ -135,7 +136,7 @@ export default function SubmissionDetailPage() {
                     {value.map((item: string, idx: number) => (
                         <span
                             key={idx}
-                            className="px-2 py-1 bg-blue-100 text-blue-700 text-sm rounded-full"
+                            className="px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full border border-blue-200"
                         >
                             {item}
                         </span>
@@ -156,12 +157,12 @@ export default function SubmissionDetailPage() {
                             ★
                         </span>
                     ))}
-                    <span className="ml-2 text-gray-600">({rating}/5)</span>
+                    <span className="ml-2 text-sm text-gray-500">({rating}/5)</span>
                 </div>
             );
         }
 
-        return <p className="text-gray-800">{String(value)}</p>;
+        return <p className="text-gray-800 text-sm">{String(value)}</p>;
     };
 
     if (isLoading) {
@@ -169,7 +170,7 @@ export default function SubmissionDetailPage() {
             <div className="max-w-3xl">
                 <Skeleton className="h-4 w-32 mb-4" />
                 <Skeleton className="h-8 w-64 mb-6" />
-                <div className="bg-white p-6 rounded-lg shadow-md">
+                <div className="bg-white p-6 rounded-xl border border-gray-100">
                     <Skeleton className="h-6 w-48 mb-4" />
                     <Skeleton className="h-4 w-full mb-3" />
                     <Skeleton className="h-4 w-full mb-3" />
@@ -185,9 +186,10 @@ export default function SubmissionDetailPage() {
                 <p className="text-red-500 mb-4">{error}</p>
                 <Link
                     href="/dashboard/forms"
-                    className="text-blue-500 hover:text-blue-600"
+                    className="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-700 text-sm font-medium"
                 >
-                    ← Back to Forms
+                    <ChevronLeftIcon className="w-4 h-4" />
+                    Back to Forms
                 </Link>
             </div>
         );
@@ -200,60 +202,65 @@ export default function SubmissionDetailPage() {
             <div className="mb-6">
                 <Link
                     href={`/dashboard/forms/${submission.form.publicId}/submissions`}
-                    className="text-gray-500 hover:text-gray-700 text-sm mb-2 inline-block"
+                    className="inline-flex items-center gap-1.5 text-gray-500 hover:text-gray-700 text-sm mb-3 transition-colors"
                 >
-                    ← Back to Submissions
+                    <ChevronLeftIcon className="w-4 h-4" />
+                    Back to Submissions
                 </Link>
-                <h1 className="text-2xl font-bold text-gray-800">Submission Details</h1>
+                <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Submission Details</h1>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-                <h2 className="text-lg font-semibold text-gray-800 mb-3">Form Info</h2>
+            {/* Form Info */}
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-4">
+                <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-3 pb-3 border-b border-gray-100">Form Info</h2>
                 <div className="flex items-center gap-3">
-                    <p className="text-gray-800">{submission.form.title}</p>
-                    <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600">
+                    <p className="text-gray-800 font-medium">{submission.form.title}</p>
+                    <span className="px-2.5 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600 border border-gray-200">
                         v{submission.form.version}
                     </span>
                 </div>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-                <h2 className="text-lg font-semibold text-gray-800 mb-3">Submitter Info</h2>
-                <div className="space-y-3">
+            {/* Submitter Info */}
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-4">
+                <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-3 pb-3 border-b border-gray-100">Submitter Info</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <p className="text-sm text-gray-500">Name</p>
-                        <p className="text-gray-800">{submission.contact.fullName || 'Anonymous'}</p>
+                        <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Name</p>
+                        <p className="text-gray-800 font-medium">{submission.contact.fullName || 'Anonymous'}</p>
                     </div>
                     <div>
-                        <p className="text-sm text-gray-500">Email</p>
-                        <p className="text-gray-800">{submission.contact.email}</p>
+                        <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Email</p>
+                        <p className="text-gray-800 font-medium">{submission.contact.email}</p>
                     </div>
                 </div>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-                <h2 className="text-lg font-semibold text-gray-800 mb-3">Response Data</h2>
-                <div className="space-y-4">
-                    {Object.entries(submission.responseData).map(([key, value]) => (
-                        <div key={key}>
-                            <p className="text-sm text-gray-500 mb-1">{key}</p>
+            {/* Response Data */}
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-4">
+                <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-3 pb-3 border-b border-gray-100">Response Data</h2>
+                <div className="divide-y divide-gray-100">
+                    {Object.entries(submission.responseData).map(([key, value], index) => (
+                        <div key={key} className={`py-3 ${index % 2 === 1 ? 'bg-gray-50/50 -mx-6 px-6' : ''}`}>
+                            <p className="text-xs text-gray-500 uppercase tracking-wider mb-1.5">{key}</p>
                             {renderValue(key, value)}
                         </div>
                     ))}
                 </div>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-                <div className="flex items-center justify-between">
+            {/* Status & Timestamp */}
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <p className="text-sm text-gray-500">Status</p>
-                        <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700 capitalize">
+                        <p className="text-xs text-gray-500 uppercase tracking-wider mb-1.5">Status</p>
+                        <span className="inline-flex px-2.5 py-1 text-xs font-medium rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 capitalize">
                             {submission.status}
                         </span>
                     </div>
-                    <div className="text-right">
-                        <p className="text-sm text-gray-500">Submitted at</p>
-                        <p className="text-gray-800">
+                    <div>
+                        <p className="text-xs text-gray-500 uppercase tracking-wider mb-1.5">Submitted at</p>
+                        <p className="text-gray-800 text-sm font-medium">
                             {new Date(submission.submittedAt).toLocaleString()}
                         </p>
                     </div>
@@ -264,8 +271,9 @@ export default function SubmissionDetailPage() {
                 <div>
                     <button
                         onClick={() => setShowDeleteModal(true)}
-                        className="bg-red-100 text-red-700 px-4 py-2 rounded-md hover:bg-red-200"
+                        className="inline-flex items-center gap-2 bg-red-50 text-red-700 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-red-100 border border-red-200 transition-colors"
                     >
+                        <TrashIcon className="w-4 h-4" />
                         Delete Submission
                     </button>
                 </div>
