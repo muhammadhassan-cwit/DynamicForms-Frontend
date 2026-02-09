@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '@/hooks/use-auth';
 import { loginUser } from '@/lib/auth-service';
@@ -15,7 +15,8 @@ interface LoginFormData {
 
 export default function LoginPage() {
   const router = useRouter();
-  const { isAuthenticated, isLoading: authLoading, login } = useAuth();
+  const searchParams = useSearchParams();
+  const { isAuthenticated, isLoading: authLoading, login, logout } = useAuth();
 
   const {
     register,
@@ -24,20 +25,27 @@ export default function LoginPage() {
   } = useForm<LoginFormData>();
 
   useEffect(() => {
+    // If middleware redirected here (redirect param exists), the cookie is gone.
+    // Clear stale localStorage user data to prevent a redirect loop.
+    if (searchParams.get('redirect') && isAuthenticated) {
+      logout();
+      return;
+    }
+
     if (!authLoading && isAuthenticated) {
       router.push('/dashboard');
     }
-  }, [isAuthenticated, authLoading, router]);
+  }, [isAuthenticated, authLoading, router, searchParams, logout]);
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      const response = await loginUser(data.email, data.password);
-      login(response.token, response.user);
+      const user = await loginUser(data.email, data.password);
+      login(user);
 
-      toast.success('Welcome back');
+      toast.success('Logged in Successfully');
       router.push('/dashboard');
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Invalid email or password');
+      toast.error(err.message || 'Invalid email or password');
     }
   };
 

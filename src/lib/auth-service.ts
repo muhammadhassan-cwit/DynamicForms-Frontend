@@ -1,13 +1,8 @@
 import api from '@/lib/api';
 import { ApiResponse, User } from '@/types';
 
-interface LoginResponse {
-  token: string;
-  user: User;
-}
-
-export const loginUser = async (email: string, password: string): Promise<LoginResponse> => {
-  const response = await api.post<ApiResponse<LoginResponse>>('/auth/login', {
+export const loginUser = async (email: string, password: string): Promise<User> => {
+  const response = await api.post<ApiResponse<{ user: User }>>('/auth/login', {
     email,
     password,
   });
@@ -16,5 +11,5 @@ export const loginUser = async (email: string, password: string): Promise<LoginR
     throw new Error(response.data.message || 'Login failed');
   }
 
-  return response.data.data;
+  return response.data.data.user;
 };
