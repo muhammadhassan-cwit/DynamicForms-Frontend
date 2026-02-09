@@ -14,11 +14,13 @@ export interface Company {
 
 export interface FormField {
   id: string;
-  type: 'text' | 'email' | 'select' | 'textarea' | 'number' | 'date';
+  type: 'text' | 'email' | 'select' | 'textarea' | 'number' | 'date' | 'checkbox' | 'radio' | 'file' | 'image' | 'phone' | 'url' | 'rating';
   label: string;
   required?: boolean;
   options?: string[];
   placeholder?: string;
+  maxSize?: number;
+  allowedTypes?: string[];
 }
 
 export interface Form {
@@ -67,4 +69,23 @@ export interface ApiResponse<T> {
   success: boolean;
   message?: string;
   data?: T;
+}
+
+export interface UploadValidationRequest {
+  fieldId: string;
+  fileSize: number;
+  mimeType: string;
+}
+
+export interface UploadValidationResponse {
+  allowed: boolean;
+  maxSize: number;
+  allowedTypes: string[];
+}
+
+export interface UploadResponse {
+  filePath: string;
+  originalName: string;
+  size: number;
+  mimeType: string;
 }

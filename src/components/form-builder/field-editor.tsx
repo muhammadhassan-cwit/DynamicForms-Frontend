@@ -16,7 +16,42 @@ const fieldTypes = [
   { value: 'number', label: 'Number' },
   { value: 'date', label: 'Date' },
   { value: 'select', label: 'Dropdown' },
+  { value: 'checkbox', label: 'Checkbox' },
+  { value: 'radio', label: 'Radio Buttons' },
+  { value: 'file', label: 'File Upload' },
+  { value: 'image', label: 'Image Upload' },
+  { value: 'phone', label: 'Phone Number' },
+  { value: 'url', label: 'URL' },
+  { value: 'rating', label: 'Rating' },
 ];
+
+const fileSizeOptions = [
+  { value: 1048576, label: '1 MB' },
+  { value: 2097152, label: '2 MB' },
+  { value: 5242880, label: '5 MB' },
+  { value: 10485760, label: '10 MB' },
+];
+
+const imageTypeOptions = [
+  { value: 'image/jpeg', label: 'JPG/JPEG' },
+  { value: 'image/png', label: 'PNG' },
+  { value: 'image/gif', label: 'GIF' },
+  { value: 'image/webp', label: 'WEBP' },
+];
+
+const fileTypeOptions = [
+  { value: 'application/pdf', label: 'PDF' },
+  { value: 'application/msword', label: 'DOC' },
+  { value: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', label: 'DOCX' },
+  { value: 'application/vnd.ms-excel', label: 'XLS' },
+  { value: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', label: 'XLSX' },
+  { value: 'text/csv', label: 'CSV' },
+  { value: 'text/plain', label: 'TXT' },
+];
+
+const typesWithPlaceholder = ['text', 'email', 'textarea', 'number', 'phone', 'url'];
+const typesWithOptions = ['select', 'checkbox', 'radio'];
+const typesWithFileConfig = ['file', 'image'];
 
 export default function FieldEditor({ field, index, onUpdate, onRemove }: FieldEditorProps) {
   const handleChange = (key: keyof FormField, value: any) => {
@@ -24,9 +59,32 @@ export default function FieldEditor({ field, index, onUpdate, onRemove }: FieldE
   };
 
   const handleOptionsChange = (value: string) => {
-    // Convert comma-separated string to array
     const options = value.split(',').map((opt) => opt.trim()).filter(Boolean);
     onUpdate(index, { ...field, options });
+  };
+
+  const handleAllowedTypeToggle = (mimeType: string) => {
+    const currentTypes = field.allowedTypes || [];
+    let newTypes: string[];
+
+    if (currentTypes.includes(mimeType)) {
+      newTypes = currentTypes.filter((t) => t !== mimeType);
+    } else {
+      newTypes = [...currentTypes, mimeType];
+    }
+
+    onUpdate(index, { ...field, allowedTypes: newTypes });
+  };
+
+  const getAvailableFileTypes = () => {
+    if (field.type === 'image') return imageTypeOptions;
+    if (field.type === 'file') return fileTypeOptions;
+    return [];
+  };
+
+  const getDefaultMaxSize = () => {
+    if (field.type === 'image') return 5242880;
+    return 10485760;
   };
 
   return (
@@ -43,7 +101,6 @@ export default function FieldEditor({ field, index, onUpdate, onRemove }: FieldE
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Field Type */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Field Type
@@ -61,7 +118,6 @@ export default function FieldEditor({ field, index, onUpdate, onRemove }: FieldE
           </select>
         </div>
 
-        {/* Label */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Label *
@@ -75,21 +131,21 @@ export default function FieldEditor({ field, index, onUpdate, onRemove }: FieldE
           />
         </div>
 
-        {/* Placeholder */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Placeholder
-          </label>
-          <input
-            type="text"
-            value={field.placeholder || ''}
-            onChange={(e) => handleChange('placeholder', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter placeholder text"
-          />
-        </div>
+        {typesWithPlaceholder.includes(field.type) && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Placeholder
+            </label>
+            <input
+              type="text"
+              value={field.placeholder || ''}
+              onChange={(e) => handleChange('placeholder', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter placeholder text"
+            />
+          </div>
+        )}
 
-        {/* Required */}
         <div className="flex items-center">
           <input
             type="checkbox"
@@ -104,8 +160,7 @@ export default function FieldEditor({ field, index, onUpdate, onRemove }: FieldE
         </div>
       </div>
 
-      {/* Options (only for select type) */}
-      {field.type === 'select' && (
+      {typesWithOptions.includes(field.type) && (
         <div className="mt-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Options (comma-separated) *
@@ -117,6 +172,55 @@ export default function FieldEditor({ field, index, onUpdate, onRemove }: FieldE
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Option 1, Option 2, Option 3"
           />
+        </div>
+      )}
+
+      {typesWithFileConfig.includes(field.type) && (
+        <div className="mt-4 p-4 bg-white rounded-md border border-gray-200">
+          <h4 className="text-sm font-medium text-gray-700 mb-3">
+            {field.type === 'image' ? 'Image' : 'File'} Upload Settings
+          </h4>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">
+                Max File Size
+              </label>
+              <select
+                value={field.maxSize || getDefaultMaxSize()}
+                onChange={(e) => handleChange('maxSize', Number(e.target.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {fileSizeOptions.map((size) => (
+                  <option key={size.value} value={size.value}>
+                    {size.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-2">
+                Allowed Types
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {getAvailableFileTypes().map((type) => (
+                  <label
+                    key={type.value}
+                    className="inline-flex items-center cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={field.allowedTypes?.includes(type.value) || false}
+                      onChange={() => handleAllowedTypeToggle(type.value)}
+                      className="h-4 w-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <span className="ml-1 text-sm text-gray-600">{type.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
