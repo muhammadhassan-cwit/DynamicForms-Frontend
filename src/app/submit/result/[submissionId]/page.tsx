@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import { getPublicSubmission } from '@/lib/form-service';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ExclamationCircleIcon } from '@/components/icons';
 
 export default function SubmissionResultPage() {
   const params = useParams();
@@ -36,11 +37,10 @@ export default function SubmissionResultPage() {
     }
   }, [submissionId, email]);
 
-  // Loading State
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-        <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-2xl">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 flex items-center justify-center p-4">
+        <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 w-full max-w-2xl">
           <Skeleton className="h-8 w-3/4 mb-4" />
           <Skeleton className="h-4 w-1/2 mb-8" />
           <Skeleton className="h-6 w-full mb-3" />
@@ -51,13 +51,15 @@ export default function SubmissionResultPage() {
     );
   }
 
-  // Error State
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-        <div className="bg-white p-8 rounded-lg shadow-md text-center">
-          <p className="text-red-500 text-lg mb-4">{error}</p>
-          <p className="text-gray-500">Unable to load this submission.</p>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 flex items-center justify-center p-4">
+        <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 text-center max-w-md">
+          <div className="mx-auto w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-4">
+            <ExclamationCircleIcon className="w-6 h-6 text-red-500" />
+          </div>
+          <p className="text-red-600 font-medium text-lg mb-2">Unable to Load</p>
+          <p className="text-gray-500 text-sm">{error}</p>
         </div>
       </div>
     );
@@ -66,48 +68,48 @@ export default function SubmissionResultPage() {
   if (!submission) return null;
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 flex items-center justify-center p-4 sm:p-6">
       <div className="w-full max-w-2xl">
         {/* Header */}
-        <div className="bg-white p-8 rounded-t-lg shadow-md border-b">
-          <h1 className="text-2xl font-bold text-gray-800">
+        <div className="bg-white p-6 sm:p-8 rounded-t-2xl shadow-sm border border-gray-100 border-b-0 border-l-4 border-l-blue-600">
+          <h1 className="text-2xl font-bold text-gray-900">
             {submission.form?.title || 'Form Submission'}
           </h1>
-          <p className="text-gray-500 mt-1">Submission Details</p>
+          <p className="text-gray-500 mt-1 text-sm">Submission Details</p>
         </div>
 
         {/* Submission Data */}
-        <div className="bg-white p-8 rounded-b-lg shadow-md">
-          <div className="space-y-4">
+        <div className="bg-white p-6 sm:p-8 rounded-b-2xl shadow-sm border border-gray-100 border-t-0">
+          <div className="space-y-1">
             {/* Company Info */}
             {submission.company?.name && (
-              <div className="pb-4 border-b">
-                <p className="text-sm text-gray-500">Company</p>
+              <div className="pb-4 mb-4 border-b border-gray-100">
+                <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Company</p>
                 <p className="text-gray-800 font-medium">{submission.company.name}</p>
               </div>
             )}
 
             {/* Response Data */}
             {submission.responseData &&
-              Object.entries(submission.responseData).map(([key, value]) => (
-                <div key={key} className="py-2">
-                  <p className="text-sm text-gray-500">{key}</p>
-                  <p className="text-gray-800">{value as string || 'N/A'}</p>
+              Object.entries(submission.responseData).map(([key, value], index) => (
+                <div key={key} className={`py-3 ${index % 2 === 1 ? 'bg-gray-50/50 -mx-6 px-6 sm:-mx-8 sm:px-8 rounded-lg' : ''}`}>
+                  <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">{key}</p>
+                  <p className="text-gray-800 text-sm">{value as string || 'N/A'}</p>
                 </div>
               ))}
 
             {/* Status */}
-            <div className="pt-4 border-t">
-              <p className="text-sm text-gray-500">Status</p>
-              <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700 capitalize">
+            <div className="pt-4 mt-4 border-t border-gray-100">
+              <p className="text-xs text-gray-500 uppercase tracking-wider mb-1.5">Status</p>
+              <span className="inline-flex px-2.5 py-1 text-xs font-medium rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 capitalize">
                 {submission.status}
               </span>
             </div>
 
             {/* Submitted At */}
-            <div>
-              <p className="text-sm text-gray-500">Submitted at</p>
-              <p className="text-gray-800">
+            <div className="pt-3">
+              <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Submitted at</p>
+              <p className="text-gray-800 text-sm">
                 {new Date(submission.submittedAt).toLocaleString()}
               </p>
             </div>
@@ -115,7 +117,7 @@ export default function SubmissionResultPage() {
         </div>
 
         {/* Footer */}
-        <p className="text-center text-gray-400 text-sm mt-4">
+        <p className="text-center text-gray-400 text-xs mt-6">
           Powered by DynamicForms
         </p>
       </div>

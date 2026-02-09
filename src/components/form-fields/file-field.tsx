@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { FormField } from '@/types';
 import { validateUpload, uploadFile } from '@/lib/form-service';
 import FieldWrapper from './field-wrapper';
+import { UploadCloudIcon, CheckCircleIcon, ExclamationCircleIcon, SpinnerIcon } from '@/components/icons';
 
 interface FileFieldProps {
   field: FormField;
@@ -78,7 +79,7 @@ export default function FileField({ field, value, onChange, error, formId, onUpl
     <FieldWrapper field={field} error={error || uploadError}>
       <div className="mt-1">
         {status === 'idle' && !value && (
-          <div className="border-2 border-dashed border-gray-300 rounded-md p-4">
+          <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 hover:border-blue-300 transition-colors duration-200">
             <input
               type="file"
               accept={acceptTypes}
@@ -90,13 +91,11 @@ export default function FileField({ field, value, onChange, error, formId, onUpl
               htmlFor={`file-${field.id}`}
               className="cursor-pointer flex flex-col items-center"
             >
-              <span className="text-gray-400 text-4xl mb-2">
-                {isImage ? '🖼️' : '📄'}
-              </span>
-              <span className="text-blue-500 hover:text-blue-600">
+              <UploadCloudIcon className="w-10 h-10 text-gray-400 mb-2" />
+              <span className="text-sm font-medium text-blue-600 hover:text-blue-700">
                 Click to upload {isImage ? 'image' : 'file'}
               </span>
-              <span className="text-gray-400 text-sm mt-1">
+              <span className="text-gray-400 text-xs mt-1">
                 Max size: {getMaxSizeDisplay()}
               </span>
             </label>
@@ -104,24 +103,24 @@ export default function FileField({ field, value, onChange, error, formId, onUpl
         )}
 
         {status === 'uploading' && (
-          <div className="border border-gray-300 rounded-md p-4 flex items-center justify-center">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mr-2"></div>
-            <span className="text-gray-600">Uploading...</span>
+          <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-6 flex items-center justify-center">
+            <SpinnerIcon className="w-5 h-5 text-blue-500 mr-2" />
+            <span className="text-sm text-gray-600">Uploading...</span>
           </div>
         )}
 
         {(status === 'success' || value) && (
-          <div className="border border-green-300 bg-green-50 rounded-md p-4">
+          <div className="border border-emerald-200 bg-emerald-50/50 rounded-xl p-4">
             {isImage && value && (
               <img
                 src={`${getBackendUrl()}${value}`}
                 alt="Preview"
-                className="max-h-40 rounded-md mb-2"
+                className="max-h-40 rounded-lg border border-gray-200 shadow-sm mb-3"
               />
             )}
             <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <span className="text-green-500 mr-2">✓</span>
+              <div className="flex items-center gap-2">
+                <CheckCircleIcon className="w-5 h-5 text-emerald-500 flex-shrink-0" />
                 <span className="text-gray-700 text-sm truncate max-w-xs">
                   {fileName || 'File uploaded'}
                 </span>
@@ -129,7 +128,7 @@ export default function FileField({ field, value, onChange, error, formId, onUpl
               <button
                 type="button"
                 onClick={handleRemove}
-                className="text-red-500 hover:text-red-700 text-sm"
+                className="text-red-500 hover:text-red-700 text-sm font-medium transition-colors"
               >
                 Remove
               </button>
@@ -138,7 +137,7 @@ export default function FileField({ field, value, onChange, error, formId, onUpl
         )}
 
         {status === 'error' && !value && (
-          <div className="border-2 border-dashed border-red-300 rounded-md p-4">
+          <div className="border-2 border-dashed border-red-300 rounded-xl p-6 bg-red-50/30">
             <input
               type="file"
               accept={acceptTypes}
@@ -150,8 +149,8 @@ export default function FileField({ field, value, onChange, error, formId, onUpl
               htmlFor={`file-${field.id}`}
               className="cursor-pointer flex flex-col items-center"
             >
-              <span className="text-red-400 text-4xl mb-2">⚠️</span>
-              <span className="text-red-500">Upload failed. Click to try again</span>
+              <ExclamationCircleIcon className="w-10 h-10 text-red-400 mb-2" />
+              <span className="text-sm font-medium text-red-600">Upload failed. Click to try again</span>
             </label>
           </div>
         )}
