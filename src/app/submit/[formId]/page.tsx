@@ -6,6 +6,17 @@ import Link from 'next/link';
 import { getPublicForm, submitForm } from '@/lib/form-service';
 import { Form } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  TextField,
+  TextareaField,
+  NumberField,
+  DateField,
+  SelectField,
+  CheckboxField,
+  RadioField,
+  RatingField,
+  FileField,
+} from '@/components/form-fields/form-fields';
 
 export default function PublicFormPage() {
   const params = useParams();
@@ -20,6 +31,7 @@ export default function PublicFormPage() {
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [submissionId, setSubmissionId] = useState<string | null>(null);
   const [submittedEmail, setSubmittedEmail] = useState<string>('');
+  const [uploadingFields, setUploadingFields] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const fetchForm = async () => {
@@ -44,6 +56,12 @@ export default function PublicFormPage() {
     }
   };
 
+  const handleUploadingChange = (fieldId: string, isUploading: boolean) => {
+    setUploadingFields({ ...uploadingFields, [fieldId]: isUploading });
+  };
+
+  const isAnyUploading = Object.values(uploadingFields).some((v) => v);
+
   const validate = (): boolean => {
     if (!form) return false;
 
@@ -52,12 +70,38 @@ export default function PublicFormPage() {
     form.structureSchema.forEach((field) => {
       const value = formData[field.id];
 
-      if (field.required && (!value || value.toString().trim() === '')) {
-        errors[field.id] = `${field.label} is required`;
+      if (field.required) {
+        if (field.type === 'checkbox') {
+          if (!value || !Array.isArray(value) || value.length === 0) {
+            errors[field.id] = `${field.label} is required`;
+          }
+        } else if (field.type === 'file' || field.type === 'image') {
+          if (!value || value.toString().trim() === '') {
+            errors[field.id] = `${field.label} is required`;
+          }
+        } else if (field.type === 'rating') {
+          if (!value || value === 0) {
+            errors[field.id] = `${field.label} is required`;
+          }
+        } else {
+          if (!value || value.toString().trim() === '') {
+            errors[field.id] = `${field.label} is required`;
+          }
+        }
       }
 
-      if (field.type === 'email' && value && !/^\S+@\S+\.\S+$/.test(value)) {
-        errors[field.id] = 'Please enter a valid email';
+      if (value) {
+        if (field.type === 'email' && !/^\S+@\S+\.\S+$/.test(value)) {
+          errors[field.id] = 'Please enter a valid email';
+        }
+
+        if (field.type === 'phone' && !/^[+]?[\d\s\-()]{7,}$/.test(value)) {
+          errors[field.id] = 'Please enter a valid phone number';
+        }
+
+        if (field.type === 'url' && !/^https?:\/\/.+\..+/.test(value)) {
+          errors[field.id] = 'Please enter a valid URL (starting with http:// or https://)';
+        }
       }
     });
 
@@ -104,7 +148,113 @@ export default function PublicFormPage() {
     }
   };
 
-  // Loading State
+  const renderField = (field: any) => {
+    const value = formData[field.id];
+    const fieldError = validationErrors[field.id];
+    const onChange = (val: any) => handleInputChange(field.id, val);
+
+    switch (field.type) {
+      case 'text':
+      case 'email':
+      case 'phone':
+      case 'url':
+        return (
+          <TextField
+            field={field}
+            value={value || ''}
+            onChange={onChange}
+            error={fieldError}
+          />
+        );
+
+      case 'textarea':
+        return (
+          <TextareaField
+            field={field}
+            value={value || ''}
+            onChange={onChange}
+            error={fieldError}
+          />
+        );
+
+      case 'number':
+        return (
+          <NumberField
+            field={field}
+            value={value || ''}
+            onChange={onChange}
+            error={fieldError}
+          />
+        );
+
+      case 'date':
+        return (
+          <DateField
+            field={field}
+            value={value || ''}
+            onChange={onChange}
+            error={fieldError}
+          />
+        );
+
+      case 'select':
+        return (
+          <SelectField
+            field={field}
+            value={value || ''}
+            onChange={onChange}
+            error={fieldError}
+          />
+        );
+
+      case 'checkbox':
+        return (
+          <CheckboxField
+            field={field}
+            value={value || []}
+            onChange={onChange}
+            error={fieldError}
+          />
+        );
+
+      case 'radio':
+        return (
+          <RadioField
+            field={field}
+            value={value || ''}
+            onChange={onChange}
+            error={fieldError}
+          />
+        );
+
+      case 'rating':
+        return (
+          <RatingField
+            field={field}
+            value={value || 0}
+            onChange={onChange}
+            error={fieldError}
+          />
+        );
+
+      case 'file':
+      case 'image':
+        return (
+          <FileField
+            field={field}
+            value={value || ''}
+            onChange={onChange}
+            error={fieldError}
+            formId={formId}
+            onUploadingChange={(isUploading) => handleUploadingChange(field.id, isUploading)}
+          />
+        );
+
+      default:
+        return null;
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
@@ -119,7 +269,6 @@ export default function PublicFormPage() {
     );
   }
 
-  // Error State
   if (error && !form) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
@@ -131,7 +280,6 @@ export default function PublicFormPage() {
     );
   }
 
-  // Success State
   if (isSubmitted) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
@@ -154,11 +302,9 @@ export default function PublicFormPage() {
 
   if (!form) return null;
 
-  // Form View
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
       <div className="w-full max-w-2xl">
-        {/* Form Header */}
         <div className="bg-white p-8 rounded-t-lg shadow-md border-b">
           <h1 className="text-2xl font-bold text-gray-800">{form.title}</h1>
           {form.description && (
@@ -166,114 +312,28 @@ export default function PublicFormPage() {
           )}
         </div>
 
-        {/* Form Fields */}
         <form onSubmit={handleSubmit} className="bg-white p-8 rounded-b-lg shadow-md">
           <div className="space-y-6">
             {form.structureSchema.map((field) => (
-              <div key={field.id}>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {field.label}
-                  {field.required && <span className="text-red-500 ml-1">*</span>}
-                </label>
-
-                {/* Text Input */}
-                {field.type === 'text' && (
-                  <input
-                    type="text"
-                    value={formData[field.id] || ''}
-                    onChange={(e) => handleInputChange(field.id, e.target.value)}
-                    placeholder={field.placeholder || ''}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                )}
-
-                {/* Email Input */}
-                {field.type === 'email' && (
-                  <input
-                    type="email"
-                    value={formData[field.id] || ''}
-                    onChange={(e) => handleInputChange(field.id, e.target.value)}
-                    placeholder={field.placeholder || ''}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                )}
-
-                {/* Number Input */}
-                {field.type === 'number' && (
-                  <input
-                    type="number"
-                    value={formData[field.id] || ''}
-                    onChange={(e) => handleInputChange(field.id, e.target.value)}
-                    placeholder={field.placeholder || ''}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                )}
-
-                {/* Date Input */}
-                {field.type === 'date' && (
-                  <input
-                    type="date"
-                    value={formData[field.id] || ''}
-                    onChange={(e) => handleInputChange(field.id, e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                )}
-
-                {/* Textarea */}
-                {field.type === 'textarea' && (
-                  <textarea
-                    value={formData[field.id] || ''}
-                    onChange={(e) => handleInputChange(field.id, e.target.value)}
-                    placeholder={field.placeholder || ''}
-                    rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                )}
-
-                {/* Select Dropdown */}
-                {field.type === 'select' && (
-                  <select
-                    value={formData[field.id] || ''}
-                    onChange={(e) => handleInputChange(field.id, e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Select an option</option>
-                    {field.options?.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                )}
-
-                {/* Validation Error */}
-                {validationErrors[field.id] && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {validationErrors[field.id]}
-                  </p>
-                )}
-              </div>
+              <div key={field.id}>{renderField(field)}</div>
             ))}
           </div>
 
-          {/* Error Message */}
           {error && (
             <div className="bg-red-50 text-red-500 p-4 rounded-md mt-6">
               {error}
             </div>
           )}
 
-          {/* Submit Button */}
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || isAnyUploading}
             className="mt-6 w-full bg-blue-500 text-white py-3 rounded-md hover:bg-blue-600 disabled:opacity-50"
           >
-            {isSubmitting ? 'Submitting...' : 'Submit'}
+            {isSubmitting ? 'Submitting...' : isAnyUploading ? 'Uploading...' : 'Submit'}
           </button>
         </form>
 
-        {/* Footer */}
         <p className="text-center text-gray-400 text-sm mt-4">
           Powered by DynamicForms
         </p>

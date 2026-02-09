@@ -1,5 +1,12 @@
 import api from '@/lib/api';
-import { ApiResponse, Form, FormField } from '@/types';
+import {
+  ApiResponse,
+  Form,
+  FormField,
+  UploadValidationRequest,
+  UploadValidationResponse,
+  UploadResponse,
+} from '@/types';
 
 export const getForms = async (): Promise<Form[]> => {
   const response = await api.get<ApiResponse<Form[]>>('/forms');
@@ -85,7 +92,7 @@ export const createForm = async (data: CreateFormData): Promise<Form> => {
   }
 
   return response.data.data;
-}
+};
 
 interface UpdateFormData {
   title?: string;
@@ -95,11 +102,56 @@ interface UpdateFormData {
   isMajorChange?: boolean;
 }
 
-export const updateForm = async (formId: string, data: UpdateFormData): Promise<Form> => {
+export const updateForm = async (
+  formId: string,
+  data: UpdateFormData
+): Promise<Form> => {
   const response = await api.patch<ApiResponse<Form>>(`/forms/${formId}`, data);
 
   if (!response.data.success || !response.data.data) {
     throw new Error(response.data.message || 'Failed to update form');
+  }
+
+  return response.data.data;
+};
+
+export const validateUpload = async (
+  formId: string,
+  data: UploadValidationRequest
+): Promise<UploadValidationResponse> => {
+  const response = await api.post<ApiResponse<UploadValidationResponse>>(
+    `/public/forms/${formId}/validate-upload`,
+    data
+  );
+
+  if (!response.data.success || !response.data.data) {
+    throw new Error(response.data.message || 'File validation failed');
+  }
+
+  return response.data.data;
+};
+
+export const uploadFile = async (
+  formId: string,
+  fieldId: string,
+  file: File
+): Promise<UploadResponse> => {
+  const formData = new FormData();
+  formData.append('fieldId', fieldId);
+  formData.append('file', file);
+
+  const response = await api.post<ApiResponse<UploadResponse>>(
+    `/public/forms/${formId}/upload`,
+    formData,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }
+  );
+
+  if (!response.data.success || !response.data.data) {
+    throw new Error(response.data.message || 'File upload failed');
   }
 
   return response.data.data;
