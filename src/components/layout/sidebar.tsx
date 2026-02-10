@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { HomeIcon, DocumentIcon, XIcon } from '@/components/icons';
+import { HomeIcon, DocumentIcon, UsersIcon, XIcon } from '@/components/icons';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -12,6 +12,7 @@ interface SidebarProps {
 const navItems = [
   { label: 'Dashboard', href: '/dashboard', icon: HomeIcon },
   { label: 'Forms', href: '/dashboard/forms', icon: DocumentIcon },
+  { label: 'Employees', href: '/dashboard/users', icon: UsersIcon },
 ];
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {

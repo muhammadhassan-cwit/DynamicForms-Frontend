@@ -2,8 +2,9 @@ export interface User {
   id: string;
   email: string;
   fullName: string | null;
-  role: 'admin' | 'employee';
-  companyId: string;
+  role: 'admin' | 'employee' | 'superadmin';
+  companyId?: string;
+  isSuperAdmin?: boolean;
 }
 
 export interface Company {
@@ -87,4 +88,40 @@ export interface UploadResponse {
   originalName: string;
   size: number;
   mimeType: string;
+}
+
+export interface SuperAdminStats {
+  totalCompanies: number;
+  activeCompanies: number;
+  totalUsers: number;
+  totalForms: number;
+  totalSubmissions: number;
+}
+
+export interface CompanyUser {
+  publicId: string;
+  email: string;
+  fullName?: string;
+  role: string;
+  isActive: boolean;
+  lastLoginAt?: string;
+  createdAt: string;
+}
+
+export interface CompanyDetail {
+  publicId: string;
+  name: string;
+  domain: string;
+  address?: string;
+  timezone?: string;
+  themeConfig?: Record<string, any>;
+  settingsMetadata?: Record<string, any>;
+  isActive: boolean;
+  createdAt: string;
+  users?: CompanyUser[];
+  stats?: {
+    totalForms: number;
+    totalSubmissions: number;
+    totalContacts: number;
+  };
 }

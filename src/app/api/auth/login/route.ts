@@ -20,8 +20,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(data, { status: response.status });
     }
 
+    const cookieStore = await cookies();
+
     // Set HTTP-only cookie
-    (await cookies()).set('token', data.data.token, {
+    cookieStore.set('token', data.data.token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
@@ -29,13 +31,30 @@ export async function POST(request: NextRequest) {
       path: '/',
     });
 
-    // Return user data without token
+    // Set role hint cookie (non-sensitive, used by middleware for routing)
+    cookieStore.set('isSuperAdmin', data.data.user.isSuperAdmin ? '1' : '0', {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24,
+      path: '/',
+    });
+
+    // Flatten company.publicId into companyId for frontend convenience
+    const backendUser = data.data.user;
+    const user = {
+      id: backendUser.publicId,
+      email: backendUser.email,
+      fullName: backendUser.fullName,
+      role: backendUser.role,
+      isSuperAdmin: backendUser.isSuperAdmin,
+      companyId: backendUser.company?.publicId || undefined,
+    };
+
     return NextResponse.json({
       success: true,
       message: 'Login successful',
-      data: {
-        user: data.data.user,
-      },
+      data: { user },
     });
   } catch (error) {
     return NextResponse.json(

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '@/hooks/use-auth';
@@ -13,10 +13,10 @@ interface LoginFormData {
   password: string;
 }
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { isAuthenticated, isLoading: authLoading, login, logout } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading, login, logout } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
 
   const {
@@ -32,17 +32,17 @@ export default function LoginPage() {
     }
 
     if (!authLoading && isAuthenticated) {
-      router.push('/dashboard');
+      router.push(user?.isSuperAdmin ? '/super-admin' : '/dashboard');
     }
-  }, [isAuthenticated, authLoading, router, searchParams, logout]);
+  }, [isAuthenticated, authLoading, router, searchParams, logout, user]);
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      const user = await loginUser(data.email, data.password);
-      login(user);
+      const loggedInUser = await loginUser(data.email, data.password);
+      login(loggedInUser);
 
       toast.success('Logged in Successfully');
-      router.push('/dashboard');
+      router.push(loggedInUser.isSuperAdmin ? '/super-admin' : '/dashboard');
     } catch (err: any) {
       toast.error(err.message || 'Invalid email or password');
     }
@@ -158,5 +158,19 @@ export default function LoginPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }

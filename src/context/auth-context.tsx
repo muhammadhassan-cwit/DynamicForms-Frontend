@@ -1,11 +1,11 @@
 'use client';
 
-import { createContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { User, AuthState } from '@/types';
 
 interface AuthContextType extends AuthState {
   login: (user: User) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 const initialState: AuthContextType = {
@@ -13,7 +13,7 @@ const initialState: AuthContextType = {
   isAuthenticated: false,
   isLoading: true,
   login: () => {},
-  logout: () => {},
+  logout: async () => {},
 };
 
 export const AuthContext = createContext<AuthContextType>(initialState);
@@ -36,12 +36,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     setIsLoading(false);
   }, []);
 
-  const login = (newUser: User) => {
+  const login = useCallback((newUser: User) => {
     localStorage.setItem('user', JSON.stringify(newUser));
     setUser(newUser);
-  };
+  }, []);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
     } catch {
@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
     localStorage.removeItem('user');
     setUser(null);
-  };
+  }, []);
 
   return (
     <AuthContext.Provider

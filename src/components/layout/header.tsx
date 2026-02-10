@@ -2,7 +2,6 @@
 
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
-import api from '@/lib/api';
 import { toast } from 'sonner';
 import { LogoutIcon, MenuIcon, DocumentIcon } from '@/components/icons';
 
@@ -15,15 +14,9 @@ export default function Header({ onToggleSidebar }: HeaderProps) {
   const router = useRouter();
 
   const handleLogout = async () => {
-    try {
-      await api.post('/auth/logout');
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      logout();
-      toast.info('Logged out successfully');
-      router.push('/login');
-    }
+    await logout();
+    toast.info('Logged out successfully');
+    router.push('/login');
   };
 
   const getInitial = () => {
