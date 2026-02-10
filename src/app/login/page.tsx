@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '@/hooks/use-auth';
 import { loginUser } from '@/lib/auth-service';
 import { toast } from 'sonner';
-import { MailIcon, LockIcon, SpinnerIcon, DocumentIcon } from '@/components/icons';
+import { MailIcon, LockIcon, SpinnerIcon, DocumentIcon, EyeIcon, EyeOffIcon } from '@/components/icons';
 
 interface LoginFormData {
   email: string;
@@ -17,6 +17,7 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isAuthenticated, isLoading: authLoading, login, logout } = useAuth();
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -25,8 +26,6 @@ export default function LoginPage() {
   } = useForm<LoginFormData>();
 
   useEffect(() => {
-    // If middleware redirected here (redirect param exists), the cookie is gone.
-    // Clear stale localStorage user data to prevent a redirect loop.
     if (searchParams.get('redirect') && isAuthenticated) {
       logout();
       return;
@@ -113,7 +112,7 @@ export default function LoginPage() {
               </div>
               <input
                 id="password"
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 {...register('password', {
                   required: 'Password is required',
                   minLength: {
@@ -121,9 +120,20 @@ export default function LoginPage() {
                     message: 'Password must be at least 6 characters',
                   },
                 })}
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg bg-gray-50 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 focus:bg-white transition-all duration-200"
+                className="w-full pl-10 pr-12 py-2.5 border border-gray-200 rounded-lg bg-gray-50 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 focus:bg-white transition-all duration-200"
                 placeholder="Enter your password"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+              >
+                {showPassword ? (
+                  <EyeOffIcon className="w-5 h-5" />
+                ) : (
+                  <EyeIcon className="w-5 h-5" />
+                )}
+              </button>
             </div>
             {errors.password && (
               <p className="text-red-500 text-xs mt-1.5">{errors.password.message}</p>
