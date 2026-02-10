@@ -1,22 +1,23 @@
 'use client';
 
-import { useEffect } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '@/hooks/use-auth';
 import { loginUser } from '@/lib/auth-service';
 import { toast } from 'sonner';
-import { MailIcon, LockIcon, SpinnerIcon, DocumentIcon } from '@/components/icons';
+import { MailIcon, LockIcon, SpinnerIcon, DocumentIcon, EyeIcon, EyeOffIcon } from '@/components/icons';
 
 interface LoginFormData {
   email: string;
   password: string;
 }
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { isAuthenticated, isLoading: authLoading, login, logout } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading, login, logout } = useAuth();
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -25,25 +26,23 @@ export default function LoginPage() {
   } = useForm<LoginFormData>();
 
   useEffect(() => {
-    // If middleware redirected here (redirect param exists), the cookie is gone.
-    // Clear stale localStorage user data to prevent a redirect loop.
     if (searchParams.get('redirect') && isAuthenticated) {
       logout();
       return;
     }
 
     if (!authLoading && isAuthenticated) {
-      router.push('/dashboard');
+      router.push(user?.isSuperAdmin ? '/super-admin' : '/dashboard');
     }
-  }, [isAuthenticated, authLoading, router, searchParams, logout]);
+  }, [isAuthenticated, authLoading, router, searchParams, logout, user]);
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      const user = await loginUser(data.email, data.password);
-      login(user);
+      const loggedInUser = await loginUser(data.email, data.password);
+      login(loggedInUser);
 
       toast.success('Logged in Successfully');
-      router.push('/dashboard');
+      router.push(loggedInUser.isSuperAdmin ? '/super-admin' : '/dashboard');
     } catch (err: any) {
       toast.error(err.message || 'Invalid email or password');
     }
@@ -113,7 +112,7 @@ export default function LoginPage() {
               </div>
               <input
                 id="password"
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 {...register('password', {
                   required: 'Password is required',
                   minLength: {
@@ -121,9 +120,20 @@ export default function LoginPage() {
                     message: 'Password must be at least 6 characters',
                   },
                 })}
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg bg-gray-50 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 focus:bg-white transition-all duration-200"
+                className="w-full pl-10 pr-12 py-2.5 border border-gray-200 rounded-lg bg-gray-50 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 focus:bg-white transition-all duration-200"
                 placeholder="Enter your password"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+              >
+                {showPassword ? (
+                  <EyeOffIcon className="w-5 h-5" />
+                ) : (
+                  <EyeIcon className="w-5 h-5" />
+                )}
+              </button>
             </div>
             {errors.password && (
               <p className="text-red-500 text-xs mt-1.5">{errors.password.message}</p>
@@ -148,5 +158,19 @@ export default function LoginPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }
