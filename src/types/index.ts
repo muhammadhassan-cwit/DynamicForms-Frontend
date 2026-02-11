@@ -129,3 +129,11 @@ export interface CompanyDetail {
     uniqueRespondents: number;
   };
 }
+
+export interface DashboardStats {
+  totalEmployees: number;
+  totalForms: number;
+  activeForms: number;
+  totalRespondents: number;
+  uniqueRespondents: number;
+}
