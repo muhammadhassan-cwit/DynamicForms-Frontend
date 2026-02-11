@@ -3,20 +3,24 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { HomeIcon, DocumentIcon, UsersIcon, XIcon } from '@/components/icons';
+import { useAuth } from '@/hooks/use-auth';
 
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const navItems = [
-  { label: 'Dashboard', href: '/dashboard', icon: HomeIcon },
-  { label: 'Forms', href: '/dashboard/forms', icon: DocumentIcon },
-  { label: 'Employees', href: '/dashboard/users', icon: UsersIcon },
-];
-
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
+  const { user } = useAuth();
+
+  const navItems = [
+    { label: 'Dashboard', href: '/dashboard', icon: HomeIcon },
+    { label: 'Forms', href: '/dashboard/forms', icon: DocumentIcon },
+    ...(user?.role === 'admin'
+      ? [{ label: 'Employees', href: '/dashboard/users', icon: UsersIcon }]
+      : []),
+  ];
 
   const sidebarContent = (
     <div className="flex flex-col h-full">
