@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useRef, useEffect } from 'react';
 import { FormField } from '@/types';
 
 interface FieldEditorProps {
@@ -54,6 +55,21 @@ const typesWithOptions = ['select', 'checkbox', 'radio'];
 const typesWithFileConfig = ['file', 'image'];
 
 export default function FieldEditor({ field, index, onUpdate, onRemove }: FieldEditorProps) {
+  const [isTypesDropdownOpen, setIsTypesDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsTypesDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const handleChange = (key: keyof FormField, value: any) => {
     onUpdate(index, { ...field, [key]: value });
   };
@@ -76,6 +92,12 @@ export default function FieldEditor({ field, index, onUpdate, onRemove }: FieldE
     onUpdate(index, { ...field, allowedTypes: newTypes });
   };
 
+  const handleRemoveType = (mimeType: string) => {
+    const currentTypes = field.allowedTypes || [];
+    const newTypes = currentTypes.filter((t) => t !== mimeType);
+    onUpdate(index, { ...field, allowedTypes: newTypes });
+  };
+
   const getAvailableFileTypes = () => {
     if (field.type === 'image') return imageTypeOptions;
     if (field.type === 'file') return fileTypeOptions;
@@ -86,6 +108,13 @@ export default function FieldEditor({ field, index, onUpdate, onRemove }: FieldE
     if (field.type === 'image') return 5242880;
     return 10485760;
   };
+
+  const getTypeLabel = (mimeType: string) => {
+    const allTypes = [...imageTypeOptions, ...fileTypeOptions];
+    return allTypes.find((t) => t.value === mimeType)?.label || mimeType;
+  };
+
+  const selectedCount = field.allowedTypes?.length || 0;
 
   return (
     <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
@@ -199,26 +228,67 @@ export default function FieldEditor({ field, index, onUpdate, onRemove }: FieldE
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-2">
+            <div ref={dropdownRef} className="relative">
+              <label className="block text-sm font-medium text-gray-600 mb-1">
                 Allowed Types
               </label>
-              <div className="flex flex-wrap gap-2">
-                {getAvailableFileTypes().map((type) => (
-                  <label
-                    key={type.value}
-                    className="inline-flex items-center cursor-pointer"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={field.allowedTypes?.includes(type.value) || false}
-                      onChange={() => handleAllowedTypeToggle(type.value)}
-                      className="h-4 w-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
-                    />
-                    <span className="ml-1 text-sm text-gray-600">{type.label}</span>
-                  </label>
-                ))}
-              </div>
+              <button
+                type="button"
+                onClick={() => setIsTypesDropdownOpen(!isTypesDropdownOpen)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-left text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center justify-between"
+              >
+                <span className={selectedCount > 0 ? 'text-gray-700' : 'text-gray-400'}>
+                  {selectedCount > 0 ? `${selectedCount} type${selectedCount > 1 ? 's' : ''} selected` : 'Select types...'}
+                </span>
+                <svg
+                  className={`w-4 h-4 text-gray-400 transition-transform ${isTypesDropdownOpen ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {isTypesDropdownOpen && (
+                <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                  {getAvailableFileTypes().map((type) => (
+                    <label
+                      key={type.value}
+                      className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={field.allowedTypes?.includes(type.value) || false}
+                        onChange={() => handleAllowedTypeToggle(type.value)}
+                        className="h-4 w-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-700">{type.label}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+
+              {/* Selected types as tags */}
+              {selectedCount > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {field.allowedTypes?.map((mimeType) => (
+                    <span
+                      key={mimeType}
+                      className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 text-xs font-medium rounded-full border border-blue-200"
+                    >
+                      {getTypeLabel(mimeType)}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveType(mimeType)}
+                        className="hover:text-red-500 transition-colors"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
