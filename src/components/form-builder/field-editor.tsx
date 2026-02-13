@@ -56,6 +56,7 @@ const typesWithFileConfig = ['file', 'image'];
 
 export default function FieldEditor({ field, index, onUpdate, onRemove }: FieldEditorProps) {
   const [isTypesDropdownOpen, setIsTypesDropdownOpen] = useState(false);
+  const [optionsText, setOptionsText] = useState<string>(field.options?.join(', ') || '');
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
@@ -75,7 +76,11 @@ export default function FieldEditor({ field, index, onUpdate, onRemove }: FieldE
   };
 
   const handleOptionsChange = (value: string) => {
-    const options = value.split(',').map((opt) => opt.trim()).filter(Boolean);
+    setOptionsText(value);
+  };
+
+  const handleOptionsBlur = () => {
+    const options = optionsText.split(',').map((opt) => opt.trim()).filter(Boolean);
     onUpdate(index, { ...field, options });
   };
 
@@ -196,8 +201,9 @@ export default function FieldEditor({ field, index, onUpdate, onRemove }: FieldE
           </label>
           <input
             type="text"
-            value={field.options?.join(', ') || ''}
+            value={optionsText}
             onChange={(e) => handleOptionsChange(e.target.value)}
+            onBlur={handleOptionsBlur}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Option 1, Option 2, Option 3"
           />
