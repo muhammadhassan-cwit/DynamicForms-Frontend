@@ -4,7 +4,20 @@ import { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import { getPublicSubmission } from '@/lib/form-service';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ExclamationCircleIcon } from '@/components/icons';
+import { ExclamationCircleIcon, DownloadIcon } from '@/components/icons';
+
+const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+const browserOpenable = ['pdf', 'txt', 'csv'];
+
+const extensionColors: Record<string, { bg: string; text: string }> = {
+  pdf: { bg: 'bg-red-100', text: 'text-red-700' },
+  doc: { bg: 'bg-blue-100', text: 'text-blue-700' },
+  docx: { bg: 'bg-blue-100', text: 'text-blue-700' },
+  xls: { bg: 'bg-green-100', text: 'text-green-700' },
+  xlsx: { bg: 'bg-green-100', text: 'text-green-700' },
+  csv: { bg: 'bg-emerald-100', text: 'text-emerald-700' },
+  txt: { bg: 'bg-gray-100', text: 'text-gray-700' },
+};
 
 export default function SubmissionResultPage() {
   const params = useParams();
@@ -36,6 +49,118 @@ export default function SubmissionResultPage() {
       setIsLoading(false);
     }
   }, [submissionId, email]);
+
+  const getBackendUrl = () => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+    return apiUrl.replace('/api/v1', '');
+  };
+
+  const getExtension = (filePath: string) => {
+    return filePath.split('.').pop()?.toLowerCase() || '';
+  };
+
+  const isFilePath = (value: any): boolean => {
+    return typeof value === 'string' && (value.startsWith('/uploads/') || value.startsWith('/temp/'));
+  };
+
+  const renderValue = (key: string, value: any) => {
+    if (!value || value === '') {
+      return <p className="text-gray-400 italic text-sm">N/A</p>;
+    }
+
+    // File/Image path detection
+    if (isFilePath(value)) {
+      const ext = getExtension(value);
+      const fullUrl = encodeURI(`${getBackendUrl()}${value}`);
+
+      // Image — show preview
+      if (imageExtensions.includes(ext)) {
+        return (
+          <div>
+            <img
+              src={fullUrl}
+              alt={key}
+              className="max-h-48 rounded-lg border border-gray-200 shadow-sm"
+            />
+            <a
+              href={fullUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-700 text-sm mt-2"
+            >
+              View Full Size
+            </a>
+          </div>
+        );
+      }
+
+      // Browser-openable files (PDF, TXT, CSV)
+      const extColor = extensionColors[ext] || { bg: 'bg-gray-100', text: 'text-gray-700' };
+      const fileName = value.split('/').pop() || 'File';
+      // Remove timestamp prefix if present (e.g., "1770902832799-Final_Schema.txt" → "Final_Schema.txt")
+      const displayName = fileName.replace(/^\d+-/, '');
+
+      if (browserOpenable.includes(ext)) {
+        return (
+          <div className="flex items-center gap-3">
+            <div className={`flex-shrink-0 w-10 h-10 rounded-lg ${extColor.bg} flex items-center justify-center`}>
+              <span className={`text-xs font-bold uppercase ${extColor.text}`}>{ext}</span>
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm text-gray-700 truncate">{displayName}</p>
+              <a
+                href={fullUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:text-blue-700 text-xs font-medium"
+              >
+                Open File
+              </a>
+            </div>
+          </div>
+        );
+      }
+
+      // Non-browser files (DOC, DOCX, XLS, XLSX) — download
+      return (
+        <div className="flex items-center gap-3">
+          <div className={`flex-shrink-0 w-10 h-10 rounded-lg ${extColor.bg} flex items-center justify-center`}>
+            <span className={`text-xs font-bold uppercase ${extColor.text}`}>{ext}</span>
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm text-gray-700 truncate">{displayName}</p>
+            <a
+              href={fullUrl}
+              download
+              className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 text-xs font-medium"
+            >
+              <DownloadIcon className="w-3 h-3" />
+              Download File
+            </a>
+          </div>
+        </div>
+      );
+    }
+
+    // Array values (checkbox fields)
+    if (Array.isArray(value)) {
+      return (
+        <div className="flex flex-wrap gap-2">
+          {value.map((item: string, idx: number) => (
+            <span
+              key={idx}
+              className="px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full border border-blue-200"
+            >
+              {item}
+            </span>
+          ))}
+        </div>
+      );
+    }
+
+    // Default — plain text
+    return <p className="text-gray-800 text-sm">{String(value)}</p>;
+  };
 
   if (isLoading) {
     return (
@@ -93,8 +218,8 @@ export default function SubmissionResultPage() {
             {submission.responseData &&
               Object.entries(submission.responseData).map(([key, value], index) => (
                 <div key={key} className={`py-3 ${index % 2 === 1 ? 'bg-gray-50/50 -mx-6 px-6 sm:-mx-8 sm:px-8 rounded-lg' : ''}`}>
-                  <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">{key}</p>
-                  <p className="text-gray-800 text-sm">{value as string || 'N/A'}</p>
+                  <p className="text-xs text-gray-500 uppercase tracking-wider mb-1.5">{key}</p>
+                  {renderValue(key, value)}
                 </div>
               ))}
 

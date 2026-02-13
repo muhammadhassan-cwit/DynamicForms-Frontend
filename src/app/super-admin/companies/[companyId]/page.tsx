@@ -404,14 +404,23 @@ export default function CompanyDetailPage() {
 
       {/* Stats */}
       {company.stats && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex items-center gap-3">
             <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
               <DocumentIcon className="w-5 h-5 text-purple-600" />
             </div>
             <div>
-              <p className="text-xs text-gray-500">Forms</p>
+              <p className="text-xs text-gray-500">Total Forms</p>
               <p className="text-xl font-bold text-gray-900">{company.stats.totalForms}</p>
+            </div>
+          </div>
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex items-center gap-3">
+            <div className="w-10 h-10 bg-emerald-50 rounded-lg flex items-center justify-center">
+              <DocumentIcon className="w-5 h-5 text-emerald-600" />
+            </div>
+            <div>
+              <p className="text-xs text-gray-500">Active Forms</p>
+              <p className="text-xl font-bold text-gray-900">{company.stats.activeForms}</p>
             </div>
           </div>
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex items-center gap-3">
@@ -419,17 +428,26 @@ export default function CompanyDetailPage() {
               <ClipboardListIcon className="w-5 h-5 text-amber-600" />
             </div>
             <div>
-              <p className="text-xs text-gray-500">Submissions</p>
-              <p className="text-xl font-bold text-gray-900">{company.stats.totalSubmissions}</p>
+              <p className="text-xs text-gray-500">Total Respondents</p>
+              <p className="text-xl font-bold text-gray-900">{company.stats.totalRespondents}</p>
             </div>
           </div>
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex items-center gap-3">
             <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-              <UsersIcon className="w-5 h-5 text-blue-600" />
+              <ClipboardListIcon className="w-5 h-5 text-blue-600" />
             </div>
             <div>
-              <p className="text-xs text-gray-500">Contacts</p>
-              <p className="text-xl font-bold text-gray-900">{company.stats.totalContacts}</p>
+              <p className="text-xs text-gray-500">Active Respondents</p>
+              <p className="text-xl font-bold text-gray-900">{company.stats.activeRespondents}</p>
+            </div>
+          </div>
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex items-center gap-3">
+            <div className="w-10 h-10 bg-teal-50 rounded-lg flex items-center justify-center">
+              <UsersIcon className="w-5 h-5 text-teal-600" />
+            </div>
+            <div>
+              <p className="text-xs text-gray-500">Unique Respondents</p>
+              <p className="text-xl font-bold text-gray-900">{company.stats.uniqueRespondents}</p>
             </div>
           </div>
         </div>

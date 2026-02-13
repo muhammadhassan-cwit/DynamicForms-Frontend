@@ -28,6 +28,18 @@ interface SubmissionDetail {
     };
 }
 
+const browserOpenable = ['pdf', 'txt', 'csv'];
+
+const extensionColors: Record<string, { bg: string; text: string }> = {
+    pdf: { bg: 'bg-red-100', text: 'text-red-700' },
+    doc: { bg: 'bg-blue-100', text: 'text-blue-700' },
+    docx: { bg: 'bg-blue-100', text: 'text-blue-700' },
+    xls: { bg: 'bg-green-100', text: 'text-green-700' },
+    xlsx: { bg: 'bg-green-100', text: 'text-green-700' },
+    csv: { bg: 'bg-emerald-100', text: 'text-emerald-700' },
+    txt: { bg: 'bg-gray-100', text: 'text-gray-700' },
+};
+
 export default function SubmissionDetailPage() {
     const params = useParams();
     const router = useRouter();
@@ -89,6 +101,10 @@ export default function SubmissionDetailPage() {
         return apiUrl.replace('/api/v1', '');
     };
 
+    const getExtension = (filePath: string) => {
+        return filePath.split('.').pop()?.toLowerCase() || '';
+    };
+
     const renderValue = (label: string, value: any) => {
         const fieldType = getFieldType(label);
 
@@ -96,36 +112,71 @@ export default function SubmissionDetailPage() {
             return <p className="text-gray-400 italic text-sm">No response</p>;
         }
 
-        if (fieldType === 'file') {
-            return (
-                <a
-                    href={`${getBackendUrl()}${value}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors"
-                >
-                    <DownloadIcon className="w-4 h-4" />
-                    Download File
-                </a>
-            );
-        }
-
         if (fieldType === 'image') {
+            const fullUrl = encodeURI(`${getBackendUrl()}${value}`);
             return (
                 <div>
                     <img
-                        src={`${getBackendUrl()}${value}`}
+                        src={fullUrl}
                         alt={label}
                         className="max-h-48 rounded-lg border border-gray-200 shadow-sm"
                     />
                     <a
-                        href={`${getBackendUrl()}${value}`}
+                        href={fullUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-700 text-sm mt-2"
                     >
                         View Full Size
                     </a>
+                </div>
+            );
+        }
+
+        if (fieldType === 'file') {
+            const fullUrl = encodeURI(`${getBackendUrl()}${value}`);
+            const ext = getExtension(value);
+            const extColor = extensionColors[ext] || { bg: 'bg-gray-100', text: 'text-gray-700' };
+            const fileName = value.split('/').pop() || 'File';
+            const displayName = fileName.replace(/^\d+-/, '');
+
+            if (browserOpenable.includes(ext)) {
+                return (
+                    <div className="flex items-center gap-3">
+                        <div className={`flex-shrink-0 w-10 h-10 rounded-lg ${extColor.bg} flex items-center justify-center`}>
+                            <span className={`text-xs font-bold uppercase ${extColor.text}`}>{ext}</span>
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-sm text-gray-700 truncate">{displayName}</p>
+                            <a
+                                href={fullUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:text-blue-700 text-xs font-medium"
+                            >
+                                Open File
+                            </a>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="flex items-center gap-3">
+                    <div className={`flex-shrink-0 w-10 h-10 rounded-lg ${extColor.bg} flex items-center justify-center`}>
+                        <span className={`text-xs font-bold uppercase ${extColor.text}`}>{ext}</span>
+                    </div>
+                    <div className="min-w-0">
+                        <p className="text-sm text-gray-700 truncate">{displayName}</p>
+                        <a
+                            href={fullUrl}
+                            download
+                            className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 text-xs font-medium"
+                        >
+                            <DownloadIcon className="w-3 h-3" />
+                            Download File
+                        </a>
+                    </div>
                 </div>
             );
         }

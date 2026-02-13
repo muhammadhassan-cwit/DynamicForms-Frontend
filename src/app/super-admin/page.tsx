@@ -78,10 +78,22 @@ export default function SuperAdminDashboard() {
           color: 'bg-purple-50 text-purple-600',
         },
         {
-          label: 'Total Submissions',
-          value: stats.totalSubmissions,
+          label: 'Active Forms',
+          value: stats.activeForms,
+          icon: DocumentIcon,
+          color: 'bg-emerald-50 text-emerald-600',
+        },
+        {
+          label: 'Total Respondents',
+          value: stats.totalRespondents,
           icon: ClipboardListIcon,
           color: 'bg-amber-50 text-amber-600',
+        },
+        {
+          label: 'Unique Respondents',
+          value: stats.uniqueRespondents,
+          icon: UsersIcon,
+          color: 'bg-teal-50 text-teal-600',
         },
       ]
     : [];
@@ -107,7 +119,7 @@ export default function SuperAdminDashboard() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {loading
-            ? Array.from({ length: 5 }).map((_, i) => <StatCardSkeleton key={i} />)
+            ? Array.from({ length: 7 }).map((_, i) => <StatCardSkeleton key={i} />)
             : statCards.map((card) => {
                 const Icon = card.icon;
                 return (

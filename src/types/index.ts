@@ -95,7 +95,9 @@ export interface SuperAdminStats {
   activeCompanies: number;
   totalUsers: number;
   totalForms: number;
-  totalSubmissions: number;
+  activeForms: number;
+  totalRespondents: number;
+  uniqueRespondents: number;
 }
 
 export interface CompanyUser {
@@ -121,7 +123,17 @@ export interface CompanyDetail {
   users?: CompanyUser[];
   stats?: {
     totalForms: number;
-    totalSubmissions: number;
-    totalContacts: number;
+    activeForms: number;
+    totalRespondents: number;
+    activeRespondents: number;
+    uniqueRespondents: number;
   };
+}
+
+export interface DashboardStats {
+  totalEmployees: number;
+  totalForms: number;
+  activeForms: number;
+  totalRespondents: number;
+  uniqueRespondents: number;
 }
